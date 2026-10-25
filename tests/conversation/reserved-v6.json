@@ -1,0 +1,391 @@
+{
+ "version": "reserved-v6",
+ "frozen_at": "2026-10-24",
+ "purpose": "Independiente: información del servicio con datos verificados, conversación social, contexto e idioma. No se ajusta el sistema contra esta batería.",
+ "dialogs": [
+  {
+   "id": "V6-S01",
+   "lang": "es",
+   "category": "servicio",
+   "turns": [
+    {
+     "text": "¿A qué hora abren ustedes?",
+     "expect": {
+      "layer": "information",
+      "topic": "horarios",
+      "must": [
+       "Horarios de consulta registrados"
+      ],
+      "false_claims": [
+       "(s[ií]|tambi[eé]n) (atendemos|abrimos).{0,20}(s[aá]bado|domingo|fin)",
+       "no atendemos (de )?lunes"
+      ]
+     }
+    }
+   ]
+  },
+  {
+   "id": "V6-S02",
+   "lang": "es",
+   "category": "servicio",
+   "turns": [
+    {
+     "text": "¿Atienden los fines de semana?",
+     "expect": {
+      "layer": "information",
+      "topic": "horarios",
+      "must": [
+       "No hay consultas registradas los .*s[aá]bado"
+      ],
+      "false_claims": [
+       "(s[ií]|tambi[eé]n) (atendemos|abrimos).{0,20}(s[aá]bado|domingo|fin)",
+       "no atendemos (de )?lunes"
+      ]
+     }
+    }
+   ]
+  },
+  {
+   "id": "V6-S03",
+   "lang": "es",
+   "category": "servicio",
+   "turns": [
+    {
+     "text": "Cuando saque la cita, ¿me dan algún comprobante?",
+     "expect": {
+      "layer": "information",
+      "topic": "comprobantes",
+      "must": [
+       "PDF"
+      ],
+      "false_claims": [
+       "no (se )?(da|dan|entrega|entregamos|emite|emitimos|genera|hay).{0,15}(comprobante|recibo)"
+      ]
+     }
+    }
+   ]
+  },
+  {
+   "id": "V6-S04",
+   "lang": "es",
+   "category": "servicio",
+   "turns": [
+    {
+     "text": "¿Cuánto cuesta una consulta con el cardiólogo?",
+     "expect": {
+      "layer": "information",
+      "topic": "precios_seguros",
+      "must": [
+       "Cardiolog[ií]a: RD\\$2"
+      ]
+     }
+    }
+   ]
+  },
+  {
+   "id": "V6-S05",
+   "lang": "es",
+   "category": "servicio",
+   "turns": [
+    {
+     "text": "¿Aceptan el seguro ARS Ficticia Uno?",
+     "expect": {
+      "layer": "information",
+      "topic": "precios_seguros",
+      "must": [
+       "ARS Ficticia Uno"
+      ]
+     }
+    }
+   ]
+  },
+  {
+   "id": "V6-S06",
+   "lang": "es",
+   "category": "servicio",
+   "turns": [
+    {
+     "text": "Pásame el número de teléfono del hospital",
+     "expect": {
+      "layer": "information",
+      "topic": "ubicacion_contacto",
+      "must": [
+       "555-0100"
+      ]
+     }
+    }
+   ]
+  },
+  {
+   "id": "V6-S07",
+   "lang": "es",
+   "category": "servicio",
+   "turns": [
+    {
+     "text": "¿Qué cosas puedes hacer por mí?",
+     "expect": {
+      "layer": "information",
+      "topic": "funciones",
+      "must": [
+       "reservar una cita nueva"
+      ]
+     }
+    }
+   ]
+  },
+  {
+   "id": "V6-S08",
+   "lang": "es",
+   "category": "servicio",
+   "turns": [
+    {
+     "text": "¿Con cuántos días de anticipación puedo reservar?",
+     "expect": {
+      "layer": "information",
+      "topic": "politicas",
+      "must": [
+       "d[ií]as de antelaci[oó]n"
+      ]
+     }
+    }
+   ]
+  },
+  {
+   "id": "V6-S09",
+   "lang": "es",
+   "category": "servicio",
+   "turns": [
+    {
+     "text": "¿El hospital tiene cafetería?",
+     "expect": {
+      "layer": "information",
+      "must": [
+       "no puedo confirmar"
+      ],
+      "must_not": [
+       "s[ií],? (tenemos|hay) (una )?cafeter[ií]a"
+      ]
+     }
+    }
+   ]
+  },
+  {
+   "id": "V6-S10",
+   "lang": "en",
+   "category": "servicio",
+   "turns": [
+    {
+     "text": "Are you open on Saturdays?",
+     "expect": {
+      "layer": "information",
+      "topic": "horarios",
+      "reply_lang": "en",
+      "must": [
+       "No consultations are registered on.*Saturday"
+      ],
+      "false_claims": [
+       "(yes|we are) open on saturday"
+      ]
+     }
+    }
+   ]
+  },
+  {
+   "id": "V6-S11",
+   "lang": "es",
+   "category": "servicio",
+   "turns": [
+    {
+     "text": "¿Puedo pagar con tarjeta?",
+     "expect": {
+      "layer": "information",
+      "topic": "precios_seguros",
+      "must": [
+       "tarjeta"
+      ]
+     }
+    }
+   ]
+  },
+  {
+   "id": "V6-S12",
+   "lang": "es",
+   "category": "servicio",
+   "turns": [
+    {
+     "text": "¿Dónde están ubicados?",
+     "expect": {
+      "layer": "information",
+      "topic": "ubicacion_contacto",
+      "must": [
+       "Av\\. Ficticia 100"
+      ]
+     }
+    }
+   ]
+  },
+  {
+   "id": "V6-C01",
+   "lang": "es",
+   "category": "conversacion",
+   "turns": [
+    {
+     "text": "Hola, ¿cómo va todo por ahí?",
+     "expect": {
+      "layer": "conversation",
+      "reply_lang": "es"
+     }
+    },
+    {
+     "text": "Por cierto, ¿abren los domingos?",
+     "expect": {
+      "layer": "information",
+      "topic": "horarios",
+      "must": [
+       "No hay consultas registradas los .*domingo"
+      ],
+      "false_claims": [
+       "(s[ií]|tambi[eé]n) (atendemos|abrimos).{0,20}(s[aá]bado|domingo|fin)",
+       "no atendemos (de )?lunes"
+      ]
+     }
+    }
+   ]
+  },
+  {
+   "id": "V6-C02",
+   "lang": "es",
+   "category": "conversacion",
+   "turns": [
+    {
+     "text": "Cuéntame un dato curioso sobre el café",
+     "expect": {
+      "layer": "conversation",
+      "must_not": [
+       "(abrimos|atendemos|comprobante|recibo|RD\\$)"
+      ]
+     }
+    }
+   ]
+  },
+  {
+   "id": "V6-C03",
+   "lang": "en",
+   "category": "conversacion",
+   "turns": [
+    {
+     "text": "Thanks a lot, you have been very helpful today!",
+     "expect": {
+      "layer": "conversation",
+      "reply_lang": "en"
+     }
+    }
+   ]
+  },
+  {
+   "id": "V6-X01",
+   "lang": "es",
+   "category": "contexto",
+   "turns": [
+    {
+     "text": "Quiero una cita de pediatría",
+     "expect": {
+      "layer": "agenda",
+      "step": "choosing_slot"
+     }
+    },
+    {
+     "text": "¿Y cuánto cuesta esa consulta?",
+     "expect": {
+      "layer": "information",
+      "topic": "precios_seguros",
+      "must": [
+       "Pediatr[ií]a: RD\\$1"
+      ],
+      "step": "choosing_slot"
+     }
+    },
+    {
+     "text": "Vale, la primera opción",
+     "expect": {
+      "layer": "operation",
+      "step": "awaiting_confirmation"
+     }
+    }
+   ]
+  },
+  {
+   "id": "V6-X02",
+   "lang": "es",
+   "category": "contexto",
+   "turns": [
+    {
+     "text": "necesito resolver lo de mi cosa",
+     "expect": {
+      "layer": "clarification"
+     }
+    }
+   ]
+  },
+  {
+   "id": "V6-X03",
+   "lang": "es",
+   "category": "contexto",
+   "turns": [
+    {
+     "text": "Quiero una cita de medicina interna",
+     "expect": {
+      "layer": "agenda",
+      "step": "choosing_slot"
+     }
+    },
+    {
+     "text": "¿Me van a dar comprobante de esa cita?",
+     "expect": {
+      "layer": "information",
+      "topic": "comprobantes",
+      "must": [
+       "PDF"
+      ],
+      "false_claims": [
+       "no (se )?(da|dan|entrega|entregamos|emite|emitimos|genera|hay).{0,15}(comprobante|recibo)"
+      ],
+      "step": "choosing_slot"
+     }
+    }
+   ]
+  },
+  {
+   "id": "V6-L01",
+   "lang": "pt",
+   "category": "idioma",
+   "turns": [
+    {
+     "text": "Quais são os horários de atendimento?",
+     "expect": {
+      "layer": "information",
+      "topic": "horarios"
+     }
+    }
+   ]
+  },
+  {
+   "id": "V6-L02",
+   "lang": "en",
+   "category": "idioma",
+   "turns": [
+    {
+     "text": "How much does a pediatric consultation cost?",
+     "expect": {
+      "layer": "information",
+      "topic": "precios_seguros",
+      "reply_lang": "en",
+      "must": [
+       "Pediatrics: RD\\$1"
+      ]
+     }
+    }
+   ]
+  }
+ ]
+}

@@ -1,0 +1,66 @@
+{
+  "request": {
+    "method": "GET",
+    "path": "/api/v1/admin/jobs?limit=5"
+  },
+  "status": 200,
+  "body": {
+    "items": [
+      {
+        "id": "8af3d9f9-9579-4fcb-a69f-225fc882c1d9",
+        "kind": "reminder.1h",
+        "status": "pending",
+        "attempts": 0,
+        "max_attempts": 5,
+        "aggregate_id": "d903e3c9-0224-4b20-bb99-1a7444a78913",
+        "available_at": "2026-10-26T07:00:00-04:00",
+        "last_error": null,
+        "updated_at": "2026-10-23T19:08:47-04:00"
+      },
+      {
+        "id": "618629ce-13b7-4120-b359-f429b456add2",
+        "kind": "calendar.sync",
+        "status": "pending",
+        "attempts": 0,
+        "max_attempts": 5,
+        "aggregate_id": "d903e3c9-0224-4b20-bb99-1a7444a78913",
+        "available_at": "2026-10-23T19:08:47-04:00",
+        "last_error": null,
+        "updated_at": "2026-10-23T19:08:47-04:00"
+      },
+      {
+        "id": "033886ae-e4d6-4484-8ccf-a397f64c221f",
+        "kind": "reminder.24h",
+        "status": "pending",
+        "attempts": 0,
+        "max_attempts": 5,
+        "aggregate_id": "d903e3c9-0224-4b20-bb99-1a7444a78913",
+        "available_at": "2026-10-25T08:00:00-04:00",
+        "last_error": null,
+        "updated_at": "2026-10-23T19:08:47-04:00"
+      },
+      {
+        "id": "485436d7-2c15-4301-bb64-dcfdf54b1a8f",
+        "kind": "reminder.24h",
+        "status": "cancelled",
+        "attempts": 0,
+        "max_attempts": 5,
+        "aggregate_id": "f847d7ee-a769-4371-b0ff-106f8ebb9e11",
+        "available_at": "2026-10-26T08:00:00-04:00",
+        "last_error": "versión de cita reemplazada",
+        "updated_at": "2026-10-23T19:06:07-04:00"
+      },
+      {
+        "id": "c7802cd8-d679-404f-93c2-7ff61472e15c",
+        "kind": "calendar.sync",
+        "status": "pending",
+        "attempts": 0,
+        "max_attempts": 5,
+        "aggregate_id": "f847d7ee-a769-4371-b0ff-106f8ebb9e11",
+        "available_at": "2026-10-23T19:06:07-04:00",
+        "last_error": null,
+        "updated_at": "2026-10-23T19:06:07-04:00"
+      }
+    ]
+  }
+}

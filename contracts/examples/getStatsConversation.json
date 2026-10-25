@@ -1,0 +1,56 @@
+{
+  "request": {
+    "method": "GET",
+    "path": "/api/v1/stats/conversation?from=2026-10-16&to=2026-11-16"
+  },
+  "status": 200,
+  "body": {
+    "filters": {
+      "from": "2026-10-16",
+      "to": "2026-11-16",
+      "center_id": null,
+      "doctor_id": null,
+      "specialty_id": null
+    },
+    "timezone": "America/Santo_Domingo",
+    "generated_at": "2026-10-23T19:14:58-04:00",
+    "definitions": {
+      "periodo": "Intervalo [from, to) de fechas locales en la zona de negocio; to se excluye.",
+      "conversation": "Mensajes del asistente en el periodo por modo (ai, deterministic, fallback_menu, system). clarifications = respuestas que piden un dato con opciones (fecha, especialidad o cita). llm_errors = respuestas por fallo del modelo. Sin filtros de médico/especialidad."
+    },
+    "data": {
+      "replies": 246,
+      "by_mode": {
+        "ai": 99,
+        "deterministic": 140,
+        "fallback_menu": 3,
+        "system": 4
+      },
+      "clarifications": 27,
+      "llm_errors": 3,
+      "ai_by_intent": {
+        "book": 32,
+        "deny": 7,
+        "help": 6,
+        "cancel": 8,
+        "handoff": 2,
+        "greeting": 6,
+        "reschedule": 5,
+        "out_of_scope": 3,
+        "select_option": 12,
+        "clinical_question": 10,
+        "list_appointments": 8
+      },
+      "handoffs": 3,
+      "model_latency_ms": {
+        "n": 101,
+        "p50": 1556,
+        "p90": 2939
+      },
+      "tokens": {
+        "prompt": 54673,
+        "completion": 7337
+      }
+    }
+  }
+}

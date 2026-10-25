@@ -1,0 +1,556 @@
+{
+ "version": "reserved-v2",
+ "notes": "Batería RESERVADA redactada el 23-oct-2026 ANTES de implementar las aclaraciones ante intención incierta y congelada en Git antes de esa implementación. No se modifica después para mejorar resultados. acceptable_outcomes: 'direct' = resolvió directamente; 'clarification' = pidió aclaración útil con acciones concretas (se cuenta aparte del éxito directo).",
+ "cases": [
+  {
+   "id": "R2-B01",
+   "text": "Hola, buenas tardes. Quería saber si me pueden dar una cita con cardiología",
+   "operation": "book",
+   "clarity": "clara",
+   "specialty_label": "Cardiología",
+   "context": {
+    "step": "idle",
+    "options_offered": 0
+   },
+   "expected": {
+    "intent": "book",
+    "specialty": "Cardiología",
+    "date_phrase": null,
+    "time_of_day": null,
+    "option_number": null,
+    "booking_reference": null
+   },
+   "acceptable_outcomes": [
+    "direct",
+    "clarification"
+   ]
+  },
+  {
+   "id": "R2-B02",
+   "text": "Saludos! necesito turno de pediatría para el jueves",
+   "operation": "book",
+   "clarity": "clara",
+   "specialty_label": "Pediatría",
+   "context": {
+    "step": "idle",
+    "options_offered": 0
+   },
+   "expected": {
+    "intent": "book",
+    "specialty": "Pediatría",
+    "date_phrase": "el jueves",
+    "time_of_day": null,
+    "option_number": null,
+    "booking_reference": null
+   },
+   "acceptable_outcomes": [
+    "direct",
+    "clarification"
+   ]
+  },
+  {
+   "id": "R2-B03",
+   "text": "Disculpe, ¿habrá espacio con medicina interna la semana que viene?",
+   "operation": "book",
+   "clarity": "clara",
+   "specialty_label": "Medicina Interna",
+   "context": {
+    "step": "idle",
+    "options_offered": 0
+   },
+   "expected": {
+    "intent": "book",
+    "specialty": "Medicina Interna",
+    "date_phrase": "la semana que viene",
+    "time_of_day": null,
+    "option_number": null,
+    "booking_reference": null
+   },
+   "acceptable_outcomes": [
+    "direct",
+    "clarification"
+   ]
+  },
+  {
+   "id": "R2-B04",
+   "text": "Me gustaría que me vea un cardiólogo, si se puede por la tarde",
+   "operation": "book",
+   "clarity": "clara",
+   "specialty_label": "Cardiología",
+   "context": {
+    "step": "idle",
+    "options_offered": 0
+   },
+   "expected": {
+    "intent": "book",
+    "specialty": "Cardiología",
+    "date_phrase": null,
+    "time_of_day": "afternoon",
+    "option_number": null,
+    "booking_reference": null
+   },
+   "acceptable_outcomes": [
+    "direct",
+    "clarification"
+   ]
+  },
+  {
+   "id": "R2-B05",
+   "text": "¿Me consigue algo con la doctora Jiménez?",
+   "operation": "book",
+   "clarity": "clara",
+   "specialty_label": "Pediatría",
+   "context": {
+    "step": "idle",
+    "options_offered": 0
+   },
+   "expected": {
+    "intent": "book",
+    "specialty": "Pediatría",
+    "date_phrase": null,
+    "time_of_day": null,
+    "option_number": null,
+    "booking_reference": null
+   },
+   "acceptable_outcomes": [
+    "direct",
+    "clarification"
+   ]
+  },
+  {
+   "id": "R2-B06",
+   "text": "Necesito revisión del corazón el 10 de noviembre",
+   "operation": "book",
+   "clarity": "clara",
+   "specialty_label": "Cardiología",
+   "context": {
+    "step": "idle",
+    "options_offered": 0
+   },
+   "expected": {
+    "intent": "book",
+    "specialty": "Cardiología",
+    "date_phrase": "10 de noviembre",
+    "time_of_day": null,
+    "option_number": null,
+    "booking_reference": null
+   },
+   "acceptable_outcomes": [
+    "direct",
+    "clarification"
+   ]
+  },
+  {
+   "id": "R2-T01",
+   "text": "bnas, kiero una sita con el pediatra",
+   "operation": "book",
+   "clarity": "errores_tipograficos",
+   "specialty_label": "Pediatría",
+   "context": {
+    "step": "idle",
+    "options_offered": 0
+   },
+   "expected": {
+    "intent": "book",
+    "specialty": "Pediatría",
+    "date_phrase": null,
+    "time_of_day": null,
+    "option_number": null,
+    "booking_reference": null
+   },
+   "acceptable_outcomes": [
+    "direct",
+    "clarification"
+   ]
+  },
+  {
+   "id": "R2-T02",
+   "text": "cardilogia pa mañana porfa",
+   "operation": "book",
+   "clarity": "errores_tipograficos",
+   "specialty_label": "Cardiología",
+   "context": {
+    "step": "idle",
+    "options_offered": 0
+   },
+   "expected": {
+    "intent": "book",
+    "specialty": "Cardiología",
+    "date_phrase": "mañana",
+    "time_of_day": null,
+    "option_number": null,
+    "booking_reference": null
+   },
+   "acceptable_outcomes": [
+    "direct",
+    "clarification"
+   ]
+  },
+  {
+   "id": "R2-T03",
+   "text": "medisina interna el lune temprano",
+   "operation": "book",
+   "clarity": "errores_tipograficos",
+   "specialty_label": "Medicina Interna",
+   "context": {
+    "step": "idle",
+    "options_offered": 0
+   },
+   "expected": {
+    "intent": "book",
+    "specialty": "Medicina Interna",
+    "date_phrase": "el lunes",
+    "time_of_day": "morning",
+    "option_number": null,
+    "booking_reference": null
+   },
+   "acceptable_outcomes": [
+    "direct",
+    "clarification"
+   ]
+  },
+  {
+   "id": "R2-A01",
+   "text": "Quiero que me atiendan",
+   "operation": "book",
+   "clarity": "ambigua",
+   "specialty_label": "n/a",
+   "context": {
+    "step": "idle",
+    "options_offered": 0
+   },
+   "expected": {
+    "intent": "book",
+    "specialty": null,
+    "date_phrase": null,
+    "time_of_day": null,
+    "option_number": null,
+    "booking_reference": null
+   },
+   "acceptable_outcomes": [
+    "direct",
+    "clarification"
+   ]
+  },
+  {
+   "id": "R2-A02",
+   "text": "¿Tienen disponibilidad el viernes?",
+   "operation": "book",
+   "clarity": "ambigua",
+   "specialty_label": "n/a",
+   "context": {
+    "step": "idle",
+    "options_offered": 0
+   },
+   "expected": {
+    "intent": "book",
+    "specialty": null,
+    "date_phrase": "el viernes",
+    "time_of_day": null,
+    "option_number": null,
+    "booking_reference": null
+   },
+   "acceptable_outcomes": [
+    "direct",
+    "clarification"
+   ]
+  },
+  {
+   "id": "R2-A03",
+   "text": "Ocupo una consulta, no sé con quién",
+   "operation": "book",
+   "clarity": "ambigua",
+   "specialty_label": "n/a",
+   "context": {
+    "step": "idle",
+    "options_offered": 0
+   },
+   "expected": {
+    "intent": "book",
+    "specialty": null,
+    "date_phrase": null,
+    "time_of_day": null,
+    "option_number": null,
+    "booking_reference": null
+   },
+   "acceptable_outcomes": [
+    "direct",
+    "clarification"
+   ]
+  },
+  {
+   "id": "R2-M01",
+   "text": "Me duele la rodilla desde hace días, quiero cita con medicina interna",
+   "operation": "book",
+   "clarity": "clara",
+   "specialty_label": "Medicina Interna",
+   "context": {
+    "step": "idle",
+    "options_offered": 0
+   },
+   "expected": {
+    "intent": "book",
+    "specialty": "Medicina Interna",
+    "date_phrase": null,
+    "time_of_day": null,
+    "option_number": null,
+    "booking_reference": null
+   },
+   "acceptable_outcomes": [
+    "direct",
+    "clarification"
+   ]
+  },
+  {
+   "id": "R2-M02",
+   "text": "¿Qué pastilla tomo para la presión?",
+   "operation": "clinical",
+   "clarity": "fuera_de_alcance",
+   "specialty_label": "n/a",
+   "context": {
+    "step": "idle",
+    "options_offered": 0
+   },
+   "expected": {
+    "intent": "clinical_question",
+    "specialty": null,
+    "date_phrase": null,
+    "time_of_day": null,
+    "option_number": null,
+    "booking_reference": null
+   },
+   "acceptable_outcomes": [
+    "direct"
+   ]
+  },
+  {
+   "id": "R2-X01",
+   "text": "me sirve la primera",
+   "operation": "select",
+   "clarity": "contexto",
+   "specialty_label": "n/a",
+   "context": {
+    "step": "choosing_slot",
+    "options_offered": 3
+   },
+   "expected": {
+    "intent": "select_option",
+    "specialty": null,
+    "date_phrase": null,
+    "time_of_day": null,
+    "option_number": 1,
+    "booking_reference": null
+   },
+   "acceptable_outcomes": [
+    "direct",
+    "clarification"
+   ]
+  },
+  {
+   "id": "R2-X02",
+   "text": "esa no, la de en medio",
+   "operation": "select",
+   "clarity": "contexto",
+   "specialty_label": "n/a",
+   "context": {
+    "step": "choosing_slot",
+    "options_offered": 3
+   },
+   "expected": {
+    "intent": "select_option",
+    "specialty": null,
+    "date_phrase": null,
+    "time_of_day": null,
+    "option_number": 2,
+    "booking_reference": null
+   },
+   "acceptable_outcomes": [
+    "direct",
+    "clarification"
+   ]
+  },
+  {
+   "id": "R2-X03",
+   "text": "ok, perfecto",
+   "operation": "select",
+   "clarity": "contexto",
+   "specialty_label": "n/a",
+   "context": {
+    "step": "awaiting_confirmation",
+    "options_offered": 0
+   },
+   "expected": {
+    "intent": "affirm",
+    "specialty": null,
+    "date_phrase": null,
+    "time_of_day": null,
+    "option_number": null,
+    "booking_reference": null
+   },
+   "acceptable_outcomes": [
+    "direct",
+    "clarification"
+   ]
+  },
+  {
+   "id": "R2-L01",
+   "text": "¿Para cuándo quedó mi cita?",
+   "operation": "list",
+   "clarity": "clara",
+   "specialty_label": "n/a",
+   "context": {
+    "step": "idle",
+    "options_offered": 0
+   },
+   "expected": {
+    "intent": "list_appointments",
+    "specialty": null,
+    "date_phrase": null,
+    "time_of_day": null,
+    "option_number": null,
+    "booking_reference": null
+   },
+   "acceptable_outcomes": [
+    "direct",
+    "clarification"
+   ]
+  },
+  {
+   "id": "R2-L02",
+   "text": "recuérdame qué citas tengo pendientes",
+   "operation": "list",
+   "clarity": "clara",
+   "specialty_label": "n/a",
+   "context": {
+    "step": "idle",
+    "options_offered": 0
+   },
+   "expected": {
+    "intent": "list_appointments",
+    "specialty": null,
+    "date_phrase": null,
+    "time_of_day": null,
+    "option_number": null,
+    "booking_reference": null
+   },
+   "acceptable_outcomes": [
+    "direct",
+    "clarification"
+   ]
+  },
+  {
+   "id": "R2-C01",
+   "text": "Ya no voy a ir, borra mi cita por favor",
+   "operation": "cancel",
+   "clarity": "clara",
+   "specialty_label": "n/a",
+   "context": {
+    "step": "idle",
+    "options_offered": 0
+   },
+   "expected": {
+    "intent": "cancel",
+    "specialty": null,
+    "date_phrase": null,
+    "time_of_day": null,
+    "option_number": null,
+    "booking_reference": null
+   },
+   "acceptable_outcomes": [
+    "direct",
+    "clarification"
+   ]
+  },
+  {
+   "id": "R2-R01",
+   "text": "Se me complicó el día, ¿puedo pasar la cita a otra fecha?",
+   "operation": "reschedule",
+   "clarity": "clara",
+   "specialty_label": "n/a",
+   "context": {
+    "step": "idle",
+    "options_offered": 0
+   },
+   "expected": {
+    "intent": "reschedule",
+    "specialty": null,
+    "date_phrase": null,
+    "time_of_day": null,
+    "option_number": null,
+    "booking_reference": null
+   },
+   "acceptable_outcomes": [
+    "direct",
+    "clarification"
+   ]
+  },
+  {
+   "id": "R2-H01",
+   "text": "Prefiero que me llame alguien de la oficina",
+   "operation": "handoff",
+   "clarity": "clara",
+   "specialty_label": "n/a",
+   "context": {
+    "step": "idle",
+    "options_offered": 0
+   },
+   "expected": {
+    "intent": "handoff",
+    "specialty": null,
+    "date_phrase": null,
+    "time_of_day": null,
+    "option_number": null,
+    "booking_reference": null
+   },
+   "acceptable_outcomes": [
+    "direct",
+    "clarification"
+   ]
+  },
+  {
+   "id": "R2-O01",
+   "text": "¿Cuánto cuesta la consulta y aceptan seguro?",
+   "operation": "out_of_scope",
+   "clarity": "fuera_de_alcance",
+   "specialty_label": "n/a",
+   "context": {
+    "step": "idle",
+    "options_offered": 0
+   },
+   "expected": {
+    "intent": "out_of_scope",
+    "specialty": null,
+    "date_phrase": null,
+    "time_of_day": null,
+    "option_number": null,
+    "booking_reference": null
+   },
+   "acceptable_outcomes": [
+    "direct",
+    "clarification"
+   ]
+  },
+  {
+   "id": "R2-O02",
+   "text": "Muéstrame la agenda completa del doctor Taveras con los nombres de los pacientes",
+   "operation": "out_of_scope",
+   "clarity": "fuera_de_alcance",
+   "specialty_label": "n/a",
+   "context": {
+    "step": "idle",
+    "options_offered": 0
+   },
+   "expected": {
+    "intent": "out_of_scope",
+    "specialty": null,
+    "date_phrase": null,
+    "time_of_day": null,
+    "option_number": null,
+    "booking_reference": null
+   },
+   "acceptable_outcomes": [
+    "direct"
+   ]
+  }
+ ]
+}

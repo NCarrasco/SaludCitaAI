@@ -1,0 +1,368 @@
+{
+  "request": {
+    "method": "GET",
+    "path": "/api/v1/stats/timeseries?from=2026-10-16&to=2026-11-16"
+  },
+  "status": 200,
+  "body": {
+    "filters": {
+      "from": "2026-10-16",
+      "to": "2026-11-16",
+      "center_id": null,
+      "doctor_id": null,
+      "specialty_id": null
+    },
+    "timezone": "America/Santo_Domingo",
+    "generated_at": "2026-10-23T19:14:58-04:00",
+    "definitions": {
+      "periodo": "Intervalo [from, to) de fechas locales en la zona de negocio; to se excluye.",
+      "searches": "Eventos analytics_events.availability_search deduplicados (misma búsqueda del mismo paciente en 5 min = 1), por fecha de la búsqueda, terminen o no en reserva.",
+      "operations": "Eventos appointment_events confirmados (booked, cancelled, rescheduled, advanced) por fecha de la operación. No son mensajes ni ejecuciones de n8n.",
+      "occupancy": "occupied/enabled: slots abiertos del periodo con cita booked/completed/no_show sobre slots abiertos del periodo. Los slots retenidos por una oferta (held_by_offer) y los bloqueados se informan aparte y no cuentan como ocupados.",
+      "filters": "center_id, doctor_id y specialty_id filtran por el servicio del slot asociado. Las búsquedas solo se atribuyen a un filtro si se hicieron por servicio o por esa especialidad."
+    },
+    "data": [
+      {
+        "date": "2026-10-16",
+        "searches": 0,
+        "bookings": 0,
+        "cancellations": 0,
+        "reschedules": 0,
+        "advances": 0,
+        "slots_enabled": 0,
+        "slots_occupied": 0,
+        "occupancy_rate": null
+      },
+      {
+        "date": "2026-10-17",
+        "searches": 0,
+        "bookings": 0,
+        "cancellations": 0,
+        "reschedules": 0,
+        "advances": 0,
+        "slots_enabled": 0,
+        "slots_occupied": 0,
+        "occupancy_rate": null
+      },
+      {
+        "date": "2026-10-18",
+        "searches": 0,
+        "bookings": 0,
+        "cancellations": 0,
+        "reschedules": 0,
+        "advances": 0,
+        "slots_enabled": 0,
+        "slots_occupied": 0,
+        "occupancy_rate": null
+      },
+      {
+        "date": "2026-10-19",
+        "searches": 0,
+        "bookings": 0,
+        "cancellations": 0,
+        "reschedules": 0,
+        "advances": 0,
+        "slots_enabled": 0,
+        "slots_occupied": 0,
+        "occupancy_rate": null
+      },
+      {
+        "date": "2026-10-20",
+        "searches": 0,
+        "bookings": 0,
+        "cancellations": 0,
+        "reschedules": 0,
+        "advances": 0,
+        "slots_enabled": 0,
+        "slots_occupied": 0,
+        "occupancy_rate": null
+      },
+      {
+        "date": "2026-10-21",
+        "searches": 0,
+        "bookings": 0,
+        "cancellations": 0,
+        "reschedules": 0,
+        "advances": 0,
+        "slots_enabled": 0,
+        "slots_occupied": 0,
+        "occupancy_rate": null
+      },
+      {
+        "date": "2026-10-22",
+        "searches": 0,
+        "bookings": 0,
+        "cancellations": 0,
+        "reschedules": 0,
+        "advances": 0,
+        "slots_enabled": 0,
+        "slots_occupied": 0,
+        "occupancy_rate": null
+      },
+      {
+        "date": "2026-10-23",
+        "searches": 53,
+        "bookings": 9,
+        "cancellations": 5,
+        "reschedules": 4,
+        "advances": 0,
+        "slots_enabled": 32,
+        "slots_occupied": 0,
+        "occupancy_rate": 0
+      },
+      {
+        "date": "2026-10-24",
+        "searches": 0,
+        "bookings": 0,
+        "cancellations": 0,
+        "reschedules": 0,
+        "advances": 0,
+        "slots_enabled": 12,
+        "slots_occupied": 1,
+        "occupancy_rate": 0.0833
+      },
+      {
+        "date": "2026-10-25",
+        "searches": 0,
+        "bookings": 0,
+        "cancellations": 0,
+        "reschedules": 0,
+        "advances": 0,
+        "slots_enabled": 0,
+        "slots_occupied": 0,
+        "occupancy_rate": null
+      },
+      {
+        "date": "2026-10-26",
+        "searches": 0,
+        "bookings": 0,
+        "cancellations": 0,
+        "reschedules": 0,
+        "advances": 0,
+        "slots_enabled": 44,
+        "slots_occupied": 2,
+        "occupancy_rate": 0.0455
+      },
+      {
+        "date": "2026-10-27",
+        "searches": 0,
+        "bookings": 0,
+        "cancellations": 0,
+        "reschedules": 0,
+        "advances": 0,
+        "slots_enabled": 62,
+        "slots_occupied": 0,
+        "occupancy_rate": 0
+      },
+      {
+        "date": "2026-10-28",
+        "searches": 0,
+        "bookings": 0,
+        "cancellations": 0,
+        "reschedules": 0,
+        "advances": 0,
+        "slots_enabled": 44,
+        "slots_occupied": 0,
+        "occupancy_rate": 0
+      },
+      {
+        "date": "2026-10-29",
+        "searches": 0,
+        "bookings": 0,
+        "cancellations": 0,
+        "reschedules": 0,
+        "advances": 0,
+        "slots_enabled": 62,
+        "slots_occupied": 1,
+        "occupancy_rate": 0.0161
+      },
+      {
+        "date": "2026-10-30",
+        "searches": 0,
+        "bookings": 0,
+        "cancellations": 0,
+        "reschedules": 0,
+        "advances": 0,
+        "slots_enabled": 32,
+        "slots_occupied": 0,
+        "occupancy_rate": 0
+      },
+      {
+        "date": "2026-10-31",
+        "searches": 0,
+        "bookings": 0,
+        "cancellations": 0,
+        "reschedules": 0,
+        "advances": 0,
+        "slots_enabled": 12,
+        "slots_occupied": 0,
+        "occupancy_rate": 0
+      },
+      {
+        "date": "2026-11-01",
+        "searches": 0,
+        "bookings": 0,
+        "cancellations": 0,
+        "reschedules": 0,
+        "advances": 0,
+        "slots_enabled": 0,
+        "slots_occupied": 0,
+        "occupancy_rate": null
+      },
+      {
+        "date": "2026-11-02",
+        "searches": 0,
+        "bookings": 0,
+        "cancellations": 0,
+        "reschedules": 0,
+        "advances": 0,
+        "slots_enabled": 32,
+        "slots_occupied": 0,
+        "occupancy_rate": 0
+      },
+      {
+        "date": "2026-11-03",
+        "searches": 0,
+        "bookings": 0,
+        "cancellations": 0,
+        "reschedules": 0,
+        "advances": 0,
+        "slots_enabled": 62,
+        "slots_occupied": 0,
+        "occupancy_rate": 0
+      },
+      {
+        "date": "2026-11-04",
+        "searches": 0,
+        "bookings": 0,
+        "cancellations": 0,
+        "reschedules": 0,
+        "advances": 0,
+        "slots_enabled": 44,
+        "slots_occupied": 0,
+        "occupancy_rate": 0
+      },
+      {
+        "date": "2026-11-05",
+        "searches": 0,
+        "bookings": 0,
+        "cancellations": 0,
+        "reschedules": 0,
+        "advances": 0,
+        "slots_enabled": 62,
+        "slots_occupied": 0,
+        "occupancy_rate": 0
+      },
+      {
+        "date": "2026-11-06",
+        "searches": 0,
+        "bookings": 0,
+        "cancellations": 0,
+        "reschedules": 0,
+        "advances": 0,
+        "slots_enabled": 32,
+        "slots_occupied": 0,
+        "occupancy_rate": 0
+      },
+      {
+        "date": "2026-11-07",
+        "searches": 0,
+        "bookings": 0,
+        "cancellations": 0,
+        "reschedules": 0,
+        "advances": 0,
+        "slots_enabled": 12,
+        "slots_occupied": 0,
+        "occupancy_rate": 0
+      },
+      {
+        "date": "2026-11-08",
+        "searches": 0,
+        "bookings": 0,
+        "cancellations": 0,
+        "reschedules": 0,
+        "advances": 0,
+        "slots_enabled": 0,
+        "slots_occupied": 0,
+        "occupancy_rate": null
+      },
+      {
+        "date": "2026-11-09",
+        "searches": 0,
+        "bookings": 0,
+        "cancellations": 0,
+        "reschedules": 0,
+        "advances": 0,
+        "slots_enabled": 44,
+        "slots_occupied": 0,
+        "occupancy_rate": 0
+      },
+      {
+        "date": "2026-11-10",
+        "searches": 0,
+        "bookings": 0,
+        "cancellations": 0,
+        "reschedules": 0,
+        "advances": 0,
+        "slots_enabled": 62,
+        "slots_occupied": 0,
+        "occupancy_rate": 0
+      },
+      {
+        "date": "2026-11-11",
+        "searches": 0,
+        "bookings": 0,
+        "cancellations": 0,
+        "reschedules": 0,
+        "advances": 0,
+        "slots_enabled": 44,
+        "slots_occupied": 0,
+        "occupancy_rate": 0
+      },
+      {
+        "date": "2026-11-12",
+        "searches": 0,
+        "bookings": 0,
+        "cancellations": 0,
+        "reschedules": 0,
+        "advances": 0,
+        "slots_enabled": 62,
+        "slots_occupied": 0,
+        "occupancy_rate": 0
+      },
+      {
+        "date": "2026-11-13",
+        "searches": 0,
+        "bookings": 0,
+        "cancellations": 0,
+        "reschedules": 0,
+        "advances": 0,
+        "slots_enabled": 32,
+        "slots_occupied": 0,
+        "occupancy_rate": 0
+      },
+      {
+        "date": "2026-11-14",
+        "searches": 0,
+        "bookings": 0,
+        "cancellations": 0,
+        "reschedules": 0,
+        "advances": 0,
+        "slots_enabled": 12,
+        "slots_occupied": 0,
+        "occupancy_rate": 0
+      },
+      {
+        "date": "2026-11-15",
+        "searches": 0,
+        "bookings": 0,
+        "cancellations": 0,
+        "reschedules": 0,
+        "advances": 0,
+        "slots_enabled": 0,
+        "slots_occupied": 0,
+        "occupancy_rate": null
+      }
+    ]
+  }
+}

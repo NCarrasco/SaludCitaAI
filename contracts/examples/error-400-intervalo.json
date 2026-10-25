@@ -1,0 +1,15 @@
+{
+  "request": {
+    "method": "GET",
+    "path": "/api/v1/stats/summary?from=2026-11-16&to=2026-10-16"
+  },
+  "status": 400,
+  "body": {
+    "error": {
+      "code": "invalid_range",
+      "message": "`from` debe ser anterior a `to`",
+      "details": {}
+    },
+    "request_id": "cb9ff81e-4642-4a67-9443-43d7f2a40a87"
+  }
+}

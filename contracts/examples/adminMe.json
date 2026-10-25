@@ -1,0 +1,15 @@
+{
+  "request": {
+    "method": "GET",
+    "path": "/api/v1/auth/me"
+  },
+  "status": 200,
+  "body": {
+    "user": {
+      "id": "881311b9-a7a2-4db6-b383-a80c6661197d",
+      "email": "panel@saludcita.test",
+      "display_name": "Panel de estadísticas (demo)",
+      "role": "viewer"
+    }
+  }
+}

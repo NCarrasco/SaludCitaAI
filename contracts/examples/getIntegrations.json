@@ -1,0 +1,32 @@
+{
+  "request": {
+    "method": "GET",
+    "path": "/api/v1/admin/integrations"
+  },
+  "status": 200,
+  "body": {
+    "checked_at": "2026-10-23T19:14:58-04:00",
+    "database": {
+      "status": "ok"
+    },
+    "model": {
+      "status": "ok",
+      "configured_model": "qwen3:1.7b",
+      "model_present": true
+    },
+    "calendar": {
+      "status": "pending_credentials",
+      "enabled_bindings": 0,
+      "sync_by_status": {
+        "disabled": 9
+      }
+    },
+    "outbox_by_status": {
+      "cancelled": 18,
+      "pending": 25
+    },
+    "conversation_updates_by_status": {
+      "done": 246
+    }
+  }
+}

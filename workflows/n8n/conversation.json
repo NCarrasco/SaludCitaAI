@@ -1,0 +1,1145 @@
+{
+  "id": "scConversation01",
+  "name": "SaludCita · Conversación (IA local)",
+  "active": false,
+  "nodes": [
+    {
+      "id": "conv-webhook",
+      "name": "1 · Mensaje del paciente (webhook)",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2.2,
+      "position": [
+        0,
+        0
+      ],
+      "webhookId": "5a1c1d7e-2f3b-4c55-9a77-5a1d0c170001",
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "saludcita-conversation",
+        "authentication": "headerAuth",
+        "responseMode": "onReceived",
+        "options": {}
+      },
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "scWebhookSecret01",
+          "name": "SaludCita webhook (secreto compartido)"
+        }
+      }
+    },
+    {
+      "id": "conv-schedule",
+      "name": "1b · Recuperación cada minuto",
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.2,
+      "position": [
+        0,
+        220
+      ],
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "field": "minutes",
+              "minutesInterval": 1
+            }
+          ]
+        }
+      }
+    },
+    {
+      "id": "conv-claim-one",
+      "name": "2 · API: tomar el mensaje y preparar el prompt",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.5,
+      "position": [
+        240,
+        0
+      ],
+      "parameters": {
+        "method": "POST",
+        "url": "http://api:8080/api/v1/internal/updates/claim",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify({ update_id: $json.body.update_id, limit: 1 }) }}",
+        "options": {
+          "timeout": 15000
+        }
+      },
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "scApiServiceCred01",
+          "name": "SaludCita API (servicio n8n)"
+        }
+      }
+    },
+    {
+      "id": "conv-claim-any",
+      "name": "2b · API: tomar mensajes pendientes",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.5,
+      "position": [
+        240,
+        220
+      ],
+      "parameters": {
+        "method": "POST",
+        "url": "http://api:8080/api/v1/internal/updates/claim",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify({ limit: 5 }) }}",
+        "options": {
+          "timeout": 15000
+        }
+      },
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "scApiServiceCred01",
+          "name": "SaludCita API (servicio n8n)"
+        }
+      }
+    },
+    {
+      "id": "conv-split",
+      "name": "3 · Un mensaje a la vez",
+      "type": "n8n-nodes-base.splitOut",
+      "typeVersion": 1,
+      "position": [
+        480,
+        100
+      ],
+      "parameters": {
+        "fieldToSplitOut": "items",
+        "options": {}
+      }
+    },
+    {
+      "id": "conv-ollama",
+      "name": "4 · Ollama: entender la intención",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.5,
+      "position": [
+        720,
+        100
+      ],
+      "parameters": {
+        "method": "POST",
+        "url": "={{ $json.llm.url }}",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify($json.llm.body) }}",
+        "options": {
+          "timeout": "={{ $json.llm.timeout_ms }}"
+        },
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth"
+      },
+      "onError": "continueErrorOutput",
+      "retryOnFail": true,
+      "maxTries": 2,
+      "waitBetweenTries": 2000,
+      "notes": "Un reintento si Ollama falla (p. ej., proceso terminado por falta de memoria). Queda registrado en la ejecución.",
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "scApiServiceCred01",
+          "name": "SaludCita API (servicio n8n)"
+        }
+      }
+    },
+    {
+      "id": "conv-ack-ok",
+      "name": "5 · API: validar la interpretación y decidir la rama",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.5,
+      "position": [
+        980,
+        0
+      ],
+      "parameters": {
+        "method": "POST",
+        "url": "={{ 'http://api:8080/api/v1/internal/updates/' + $('3 · Un mensaje a la vez').item.json.update_id + '/route' }}",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify({ lease_token: $('3 · Un mensaje a la vez').item.json.lease_token, llm: { ok: true, content: $json.message && $json.message.content, model: $json.model, prompt_eval_count: $json.prompt_eval_count, eval_count: $json.eval_count, latency_ms: Math.round(($json.total_duration || 0) / 1e6) } }) }}",
+        "options": {
+          "timeout": 15000
+        }
+      },
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "scApiServiceCred01",
+          "name": "SaludCita API (servicio n8n)"
+        }
+      },
+      "notes": "Fase 1: la API valida el JSON del modelo, lo concilia con el texto y el estado y devuelve `route`. No ejecuta nada."
+    },
+    {
+      "id": "conv-ack-err",
+      "name": "5b · API: el modelo falló → decidir la rama",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.5,
+      "position": [
+        980,
+        260
+      ],
+      "parameters": {
+        "method": "POST",
+        "url": "={{ 'http://api:8080/api/v1/internal/updates/' + $('3 · Un mensaje a la vez').item.json.update_id + '/route' }}",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify({ lease_token: $('3 · Un mensaje a la vez').item.json.lease_token, llm: { ok: false, error: String(($json.error && ($json.error.message || $json.error)) || 'error al llamar al modelo').slice(0, 1900) } }) }}",
+        "options": {
+          "timeout": 15000
+        }
+      },
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "scApiServiceCred01",
+          "name": "SaludCita API (servicio n8n)"
+        }
+      }
+    },
+    {
+      "id": "conv-if-draft",
+      "name": "8 · ¿Redactar la respuesta con el modelo? (capa 1)",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        1740,
+        100
+      ],
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "draft-status",
+              "leftValue": "={{ $json.status }}",
+              "rightValue": "drafting",
+              "operator": {
+                "type": "string",
+                "operation": "equals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "notes": "La API devuelve status=drafting cuando la respuesta verificada admite redacción natural (prompt draft-v1)."
+    },
+    {
+      "id": "conv-draft-ollama",
+      "name": "9 · Ollama: conversar en el idioma del paciente",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.5,
+      "position": [
+        1980,
+        20
+      ],
+      "parameters": {
+        "method": "POST",
+        "url": "={{ $json.llm.url }}",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify($json.llm.body) }}",
+        "options": {
+          "timeout": "={{ $json.llm.timeout_ms }}"
+        },
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth"
+      },
+      "onError": "continueErrorOutput",
+      "retryOnFail": true,
+      "maxTries": 2,
+      "waitBetweenTries": 2000,
+      "notes": "Un reintento si Ollama falla (p. ej., proceso terminado por falta de memoria). Queda registrado en la ejecución.",
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "scApiServiceCred01",
+          "name": "SaludCita API (servicio n8n)"
+        }
+      }
+    },
+    {
+      "id": "conv-draft-ok",
+      "name": "10 · API: validar el texto generado y responder",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.5,
+      "position": [
+        2240,
+        -60
+      ],
+      "parameters": {
+        "method": "POST",
+        "url": "={{ 'http://api:8080/api/v1/internal/updates/' + $('8 · ¿Redactar la respuesta con el modelo? (capa 1)').item.json.update_id + '/draft' }}",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify({ lease_token: $('8 · ¿Redactar la respuesta con el modelo? (capa 1)').item.json.lease_token, llm: { ok: true, content: $json.message && $json.message.content, model: $json.model, prompt_eval_count: $json.prompt_eval_count, eval_count: $json.eval_count, latency_ms: Math.round(($json.total_duration || 0) / 1e6) } }) }}",
+        "options": {
+          "timeout": 15000
+        }
+      },
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "scApiServiceCred01",
+          "name": "SaludCita API (servicio n8n)"
+        }
+      }
+    },
+    {
+      "id": "conv-draft-err",
+      "name": "10b · API: sin texto generado → texto verificado",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.5,
+      "position": [
+        2240,
+        140
+      ],
+      "parameters": {
+        "method": "POST",
+        "url": "={{ 'http://api:8080/api/v1/internal/updates/' + $('8 · ¿Redactar la respuesta con el modelo? (capa 1)').item.json.update_id + '/draft' }}",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify({ lease_token: $('8 · ¿Redactar la respuesta con el modelo? (capa 1)').item.json.lease_token, llm: { ok: false, error: String(($json.error && ($json.error.message || $json.error)) || 'error al redactar').slice(0, 1900) } }) }}",
+        "options": {
+          "timeout": 15000
+        }
+      },
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "scApiServiceCred01",
+          "name": "SaludCita API (servicio n8n)"
+        }
+      }
+    },
+    {
+      "id": "conv-note",
+      "name": "Cómo leer este flujo",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        0,
+        -700
+      ],
+      "parameters": {
+        "width": 1300,
+        "height": 250,
+        "content": "## Conversación de SaludCita (cada mensaje de texto = una ejecución)\n1 · llega el mensaje → 2 · la API lo toma con lease y arma el prompt → 4 · **Ollama** devuelve intención y datos (JSON) → 5 · la **API** valida ese JSON, lo concilia con el texto y el estado y **decide la rama** (`route`), sin ejecutar nada → 6 · **Switch**: la rama que se ilumina es la decisión real → 7a–7i · la API ejecuta esa rama (agenda real, información del servicio con datos verificados, aclaración, propuesta…; si n8n pidiera otra rama, la API responde 409) → 8 · si la respuesta admite redacción natural, 9 · **Ollama** la redacta y 10 · la API la valida.\nConfirmar una cita NO se hace aquí: el botón «Confirmar» envía una orden al workflow «Comandos durables» (rama 5). Los botones de Gradio (menú, especialidad, horario) los resuelve la API directamente y no generan ejecución en este flujo.\n\n**Modelo:** la API decide a dónde va la petición (`llm.url`): Ollama local o la pasarela de la API hacia un proveedor compatible con OpenAI (Groq). La clave del proveedor solo vive en la API."
+      }
+    },
+    {
+      "id": "conv-route-switch",
+      "name": "6 · ¿Qué pidió el paciente? (rama decidida por la API)",
+      "type": "n8n-nodes-base.switch",
+      "typeVersion": 3.2,
+      "position": [
+        1220,
+        100
+      ],
+      "parameters": {
+        "rules": {
+          "values": [
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 2
+                },
+                "conditions": [
+                  {
+                    "id": "conversacion",
+                    "leftValue": "={{ $json.route }}",
+                    "rightValue": "conversacion",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "Conversación general"
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 2
+                },
+                "conditions": [
+                  {
+                    "id": "informacion",
+                    "leftValue": "={{ $json.route }}",
+                    "rightValue": "informacion",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "Información del servicio"
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 2
+                },
+                "conditions": [
+                  {
+                    "id": "disponibilidad",
+                    "leftValue": "={{ $json.route }}",
+                    "rightValue": "disponibilidad",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "Consulta de disponibilidad"
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 2
+                },
+                "conditions": [
+                  {
+                    "id": "aclaracion",
+                    "leftValue": "={{ $json.route }}",
+                    "rightValue": "aclaracion",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "Aclaración"
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 2
+                },
+                "conditions": [
+                  {
+                    "id": "operacion",
+                    "leftValue": "={{ $json.route }}",
+                    "rightValue": "operacion",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "Preparar operación"
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 2
+                },
+                "conditions": [
+                  {
+                    "id": "confirmacion",
+                    "leftValue": "={{ $json.route }}",
+                    "rightValue": "confirmacion",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "Confirmación"
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 2
+                },
+                "conditions": [
+                  {
+                    "id": "mis_citas",
+                    "leftValue": "={{ $json.route }}",
+                    "rightValue": "mis_citas",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "Mis citas"
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 2
+                },
+                "conditions": [
+                  {
+                    "id": "personal",
+                    "leftValue": "={{ $json.route }}",
+                    "rightValue": "personal",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "Hablar con el personal"
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 2
+                },
+                "conditions": [
+                  {
+                    "id": "fallo_modelo",
+                    "leftValue": "={{ $json.route }}",
+                    "rightValue": "fallo_modelo",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "Fallo del modelo"
+            }
+          ]
+        },
+        "options": {
+          "fallbackOutput": "none"
+        }
+      },
+      "notes": "Enruta por `route` (dato estructurado de la fase 1). Cada salida llama a su rama; la API rechaza una rama distinta (409)."
+    },
+    {
+      "id": "conv-branch-conversacion",
+      "name": "7a · API: conversación general (charla, saludo, empatía)",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.5,
+      "position": [
+        1480,
+        -420
+      ],
+      "parameters": {
+        "method": "POST",
+        "url": "={{ 'http://api:8080/api/v1/internal/updates/' + $json.update_id + '/branch/conversacion' }}",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify({ lease_token: $json.lease_token }) }}",
+        "options": {
+          "timeout": 15000
+        }
+      },
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "scApiServiceCred01",
+          "name": "SaludCita API (servicio n8n)"
+        }
+      }
+    },
+    {
+      "id": "conv-branch-disponibilidad",
+      "name": "7b · API: consultar disponibilidad (horarios reales)",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.5,
+      "position": [
+        1480,
+        -270
+      ],
+      "parameters": {
+        "method": "POST",
+        "url": "={{ 'http://api:8080/api/v1/internal/updates/' + $json.update_id + '/branch/disponibilidad' }}",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify({ lease_token: $json.lease_token }) }}",
+        "options": {
+          "timeout": 15000
+        }
+      },
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "scApiServiceCred01",
+          "name": "SaludCita API (servicio n8n)"
+        }
+      }
+    },
+    {
+      "id": "conv-branch-aclaracion",
+      "name": "7c · API: pedir aclaración",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.5,
+      "position": [
+        1480,
+        -120
+      ],
+      "parameters": {
+        "method": "POST",
+        "url": "={{ 'http://api:8080/api/v1/internal/updates/' + $json.update_id + '/branch/aclaracion' }}",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify({ lease_token: $json.lease_token }) }}",
+        "options": {
+          "timeout": 15000
+        }
+      },
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "scApiServiceCred01",
+          "name": "SaludCita API (servicio n8n)"
+        }
+      }
+    },
+    {
+      "id": "conv-branch-operacion",
+      "name": "7d · API: preparar operación (elegir cita u horario → tarjeta «Confirmar»)",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.5,
+      "position": [
+        1480,
+        30
+      ],
+      "parameters": {
+        "method": "POST",
+        "url": "={{ 'http://api:8080/api/v1/internal/updates/' + $json.update_id + '/branch/operacion' }}",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify({ lease_token: $json.lease_token }) }}",
+        "options": {
+          "timeout": 15000
+        }
+      },
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "scApiServiceCred01",
+          "name": "SaludCita API (servicio n8n)"
+        }
+      }
+    },
+    {
+      "id": "conv-branch-confirmacion",
+      "name": "7e · API: confirmación por texto (sí/no ante una propuesta; confirmar exige el botón)",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.5,
+      "position": [
+        1480,
+        180
+      ],
+      "parameters": {
+        "method": "POST",
+        "url": "={{ 'http://api:8080/api/v1/internal/updates/' + $json.update_id + '/branch/confirmacion' }}",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify({ lease_token: $json.lease_token }) }}",
+        "options": {
+          "timeout": 15000
+        }
+      },
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "scApiServiceCred01",
+          "name": "SaludCita API (servicio n8n)"
+        }
+      }
+    },
+    {
+      "id": "conv-branch-mis_citas",
+      "name": "7f · API: listar mis citas",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.5,
+      "position": [
+        1480,
+        330
+      ],
+      "parameters": {
+        "method": "POST",
+        "url": "={{ 'http://api:8080/api/v1/internal/updates/' + $json.update_id + '/branch/mis_citas' }}",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify({ lease_token: $json.lease_token }) }}",
+        "options": {
+          "timeout": 15000
+        }
+      },
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "scApiServiceCred01",
+          "name": "SaludCita API (servicio n8n)"
+        }
+      }
+    },
+    {
+      "id": "conv-branch-personal",
+      "name": "7g · API: pasar al personal",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.5,
+      "position": [
+        1480,
+        480
+      ],
+      "parameters": {
+        "method": "POST",
+        "url": "={{ 'http://api:8080/api/v1/internal/updates/' + $json.update_id + '/branch/personal' }}",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify({ lease_token: $json.lease_token }) }}",
+        "options": {
+          "timeout": 15000
+        }
+      },
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "scApiServiceCred01",
+          "name": "SaludCita API (servicio n8n)"
+        }
+      }
+    },
+    {
+      "id": "conv-branch-fallo_modelo",
+      "name": "7h · API: modelo sin respuesta válida → menú",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.5,
+      "position": [
+        1480,
+        630
+      ],
+      "parameters": {
+        "method": "POST",
+        "url": "={{ 'http://api:8080/api/v1/internal/updates/' + $json.update_id + '/branch/fallo_modelo' }}",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify({ lease_token: $json.lease_token }) }}",
+        "options": {
+          "timeout": 15000
+        }
+      },
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "scApiServiceCred01",
+          "name": "SaludCita API (servicio n8n)"
+        }
+      }
+    },
+    {
+      "id": "conv-branch-informacion",
+      "name": "7i · API: información del servicio (datos verificados de la agenda y la guía)",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.5,
+      "position": [
+        1480,
+        -570
+      ],
+      "parameters": {
+        "method": "POST",
+        "url": "={{ 'http://api:8080/api/v1/internal/updates/' + $json.update_id + '/branch/informacion' }}",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify({ lease_token: $json.lease_token }) }}",
+        "options": {
+          "timeout": 15000
+        }
+      },
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "scApiServiceCred01",
+          "name": "SaludCita API (servicio n8n)"
+        }
+      }
+    }
+  ],
+  "connections": {
+    "1 · Mensaje del paciente (webhook)": {
+      "main": [
+        [
+          {
+            "node": "2 · API: tomar el mensaje y preparar el prompt",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "1b · Recuperación cada minuto": {
+      "main": [
+        [
+          {
+            "node": "2b · API: tomar mensajes pendientes",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "2 · API: tomar el mensaje y preparar el prompt": {
+      "main": [
+        [
+          {
+            "node": "3 · Un mensaje a la vez",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "2b · API: tomar mensajes pendientes": {
+      "main": [
+        [
+          {
+            "node": "3 · Un mensaje a la vez",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "3 · Un mensaje a la vez": {
+      "main": [
+        [
+          {
+            "node": "4 · Ollama: entender la intención",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "4 · Ollama: entender la intención": {
+      "main": [
+        [
+          {
+            "node": "5 · API: validar la interpretación y decidir la rama",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "5b · API: el modelo falló → decidir la rama",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "5 · API: validar la interpretación y decidir la rama": {
+      "main": [
+        [
+          {
+            "node": "6 · ¿Qué pidió el paciente? (rama decidida por la API)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "5b · API: el modelo falló → decidir la rama": {
+      "main": [
+        [
+          {
+            "node": "6 · ¿Qué pidió el paciente? (rama decidida por la API)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "6 · ¿Qué pidió el paciente? (rama decidida por la API)": {
+      "main": [
+        [
+          {
+            "node": "7a · API: conversación general (charla, saludo, empatía)",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "7i · API: información del servicio (datos verificados de la agenda y la guía)",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "7b · API: consultar disponibilidad (horarios reales)",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "7c · API: pedir aclaración",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "7d · API: preparar operación (elegir cita u horario → tarjeta «Confirmar»)",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "7e · API: confirmación por texto (sí/no ante una propuesta; confirmar exige el botón)",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "7f · API: listar mis citas",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "7g · API: pasar al personal",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "7h · API: modelo sin respuesta válida → menú",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "7b · API: consultar disponibilidad (horarios reales)": {
+      "main": [
+        [
+          {
+            "node": "8 · ¿Redactar la respuesta con el modelo? (capa 1)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "7c · API: pedir aclaración": {
+      "main": [
+        [
+          {
+            "node": "8 · ¿Redactar la respuesta con el modelo? (capa 1)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "7d · API: preparar operación (elegir cita u horario → tarjeta «Confirmar»)": {
+      "main": [
+        [
+          {
+            "node": "8 · ¿Redactar la respuesta con el modelo? (capa 1)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "7e · API: confirmación por texto (sí/no ante una propuesta; confirmar exige el botón)": {
+      "main": [
+        [
+          {
+            "node": "8 · ¿Redactar la respuesta con el modelo? (capa 1)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "7f · API: listar mis citas": {
+      "main": [
+        [
+          {
+            "node": "8 · ¿Redactar la respuesta con el modelo? (capa 1)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "7g · API: pasar al personal": {
+      "main": [
+        [
+          {
+            "node": "8 · ¿Redactar la respuesta con el modelo? (capa 1)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "7h · API: modelo sin respuesta válida → menú": {
+      "main": [
+        [
+          {
+            "node": "8 · ¿Redactar la respuesta con el modelo? (capa 1)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "8 · ¿Redactar la respuesta con el modelo? (capa 1)": {
+      "main": [
+        [
+          {
+            "node": "9 · Ollama: conversar en el idioma del paciente",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        []
+      ]
+    },
+    "9 · Ollama: conversar en el idioma del paciente": {
+      "main": [
+        [
+          {
+            "node": "10 · API: validar el texto generado y responder",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "10b · API: sin texto generado → texto verificado",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "7a · API: conversación general (charla, saludo, empatía)": {
+      "main": [
+        [
+          {
+            "node": "8 · ¿Redactar la respuesta con el modelo? (capa 1)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "7i · API: información del servicio (datos verificados de la agenda y la guía)": {
+      "main": [
+        [
+          {
+            "node": "8 · ¿Redactar la respuesta con el modelo? (capa 1)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1",
+    "timezone": "America/Santo_Domingo",
+    "saveDataSuccessExecution": "all",
+    "saveDataErrorExecution": "all",
+    "callerPolicy": "workflowsFromSameOwner",
+    "saveExecutionProgress": true,
+    "saveManualExecutions": true
+  },
+  "pinData": {},
+  "tags": [],
+  "meta": {
+    "saludcita": "Exportado sin secretos. Credenciales por nombre/ID: se crean con scripts/n8n-import.sh",
+    "saludcita_publish": true
+  }
+}

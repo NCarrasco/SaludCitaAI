@@ -1,0 +1,184 @@
+name: saludcita
+
+services:
+  postgres:
+    image: postgres:18.6-alpine3.24
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: ${POSTGRES_SUPERUSER_PASSWORD:?definir en .env}
+      POSTGRES_DB: postgres
+      APP_DB_NAME: ${APP_DB_NAME}
+      APP_DB_USER: ${APP_DB_USER}
+      APP_DB_PASSWORD: ${APP_DB_PASSWORD:?definir en .env}
+      N8N_DB_NAME: ${N8N_DB_NAME}
+      N8N_DB_USER: ${N8N_DB_USER}
+      N8N_DB_PASSWORD: ${N8N_DB_PASSWORD:?definir en .env}
+      TZ: UTC
+    volumes:
+      - pgdata:/var/lib/postgresql
+      - ./postgres/init:/docker-entrypoint-initdb.d:ro
+    # Solo en loopback para pruebas locales; nunca expuesto a Internet
+    ports:
+      - "127.0.0.1:${POSTGRES_HOST_PORT:-55433}:5432"
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres -d ${APP_DB_NAME}"]
+      interval: 5s
+      timeout: 3s
+      retries: 20
+
+  migrate:
+    build:
+      context: ..
+      dockerfile: apps/api/Dockerfile
+    command: ["node", "dist/db/cli.js", "migrate-and-seed"]
+    environment: &api_env
+      DATABASE_URL: postgres://${APP_DB_USER}:${APP_DB_PASSWORD}@postgres:5432/${APP_DB_NAME}
+      BUSINESS_TIMEZONE: ${BUSINESS_TIMEZONE:-America/Santo_Domingo}
+      LOG_LEVEL: ${LOG_LEVEL:-info}
+      INTENT_TTL_SECONDS: ${INTENT_TTL_SECONDS:-600}
+      PATIENT_SESSION_TTL_HOURS: ${PATIENT_SESSION_TTL_HOURS:-12}
+      CORS_ALLOWED_ORIGINS: ${CORS_ALLOWED_ORIGINS:-}
+      SEED_PATIENT_PASSWORD: ${SEED_PATIENT_PASSWORD:?definir en .env}
+      N8N_API_SERVICE_TOKEN: ${N8N_API_SERVICE_TOKEN:?definir en .env}
+      N8N_WEBHOOK_SECRET: ${N8N_WEBHOOK_SECRET:?definir en .env}
+      GRADIO_GATEWAY_TOKEN: ${GRADIO_GATEWAY_TOKEN:?definir en .env}
+      GUEST_SESSION_TTL_DAYS: ${GUEST_SESSION_TTL_DAYS:-30}
+      RECOVERY_CODE_TTL_DAYS: ${RECOVERY_CODE_TTL_DAYS:-180}
+      N8N_CONVERSATION_WEBHOOK_URL: ${N8N_CONVERSATION_WEBHOOK_URL:-http://n8n:5678/webhook/saludcita-conversation}
+      N8N_COMMANDS_WEBHOOK_URL: ${N8N_COMMANDS_WEBHOOK_URL:-http://n8n:5678/webhook/saludcita-commands}
+      GUEST_ABANDONED_AFTER_DAYS: ${GUEST_ABANDONED_AFTER_DAYS:-30}
+      GUEST_SESSION_RETENTION_DAYS: ${GUEST_SESSION_RETENTION_DAYS:-7}
+      OLLAMA_URL: ${OLLAMA_URL:-http://ollama:11434}
+      OLLAMA_MODEL: ${OLLAMA_MODEL:-qwen3:1.7b}
+      OLLAMA_THINK: ${OLLAMA_THINK:-}
+      LLM_TIMEOUT_MS: ${LLM_TIMEOUT_MS:-45000}
+      LLM_PROVIDER: ${LLM_PROVIDER:-ollama}
+      LLM_API_BASE: ${LLM_API_BASE:-https://api.groq.com/openai/v1}
+      LLM_API_MODEL: ${LLM_API_MODEL:-llama-3.3-70b-versatile}
+      LLM_API_KEY: ${LLM_API_KEY:-}
+      LLM_FALLBACK: ${LLM_FALLBACK:-ollama}   # si el proveedor falla, responde el modelo local (OLLAMA_MODEL); «none» lo desactiva
+      LLM_CONVERSE_ENABLED: ${LLM_CONVERSE_ENABLED:-true}
+      CONVERSATION_LEASE_SECONDS: ${CONVERSATION_LEASE_SECONDS:-120}
+      SEED_ADMIN_PASSWORD: ${SEED_ADMIN_PASSWORD:?definir en .env}
+      ADMIN_SESSION_TTL_HOURS: ${ADMIN_SESSION_TTL_HOURS:-8}
+      COOKIE_SECURE: ${COOKIE_SECURE:-false}
+      OFFER_WINDOW_SECONDS: ${OFFER_WINDOW_SECONDS:-3600}
+      OFFERS_DEMO_MODE: ${OFFERS_DEMO_MODE:-false}
+      OFFER_DEMO_WINDOW_SECONDS: ${OFFER_DEMO_WINDOW_SECONDS:-120}
+    depends_on:
+      postgres:
+        condition: service_healthy
+    restart: "no"
+
+  api:
+    build:
+      context: ..
+      dockerfile: apps/api/Dockerfile
+    restart: unless-stopped
+    environment:
+      <<: *api_env
+      PORT: "8080"
+    ports:
+      - "127.0.0.1:${API_HOST_PORT:-8080}:8080"
+    depends_on:
+      migrate:
+        condition: service_completed_successfully
+    healthcheck:
+      test: ["CMD", "node", "-e", "fetch('http://127.0.0.1:8080/api/v1/health/ready').then(r=>process.exit(r.ok?0:1)).catch(()=>process.exit(1))"]
+      interval: 10s
+      timeout: 5s
+      retries: 6
+
+  # --- n8n Community: importación de credenciales/workflows antes de arrancar ---
+  n8n-import:
+    image: n8nio/n8n:2.44.6
+    entrypoint: ["/bin/sh", "/scripts/n8n-import.sh"]
+    environment: &n8n_env
+      DB_TYPE: postgresdb
+      DB_POSTGRESDB_HOST: postgres
+      DB_POSTGRESDB_PORT: "5432"
+      DB_POSTGRESDB_DATABASE: ${N8N_DB_NAME}
+      DB_POSTGRESDB_USER: ${N8N_DB_USER}
+      DB_POSTGRESDB_PASSWORD: ${N8N_DB_PASSWORD}
+      N8N_ENCRYPTION_KEY: ${N8N_ENCRYPTION_KEY:?definir en .env}
+      GENERIC_TIMEZONE: America/Santo_Domingo
+      TZ: America/Santo_Domingo
+      N8N_DIAGNOSTICS_ENABLED: "false"
+      N8N_PERSONALIZATION_ENABLED: "false"
+      N8N_VERSION_NOTIFICATIONS_ENABLED: "false"
+      N8N_BLOCK_ENV_ACCESS_IN_NODE: "true"
+      N8N_SECURE_COOKIE: "false"   # solo local (http://localhost); en el despliegue va detrás de HTTPS
+      N8N_HOST: localhost
+      N8N_PORT: "5678"
+      N8N_WEBHOOK_URL: http://localhost:${N8N_HOST_PORT:-5678}/
+      EXECUTIONS_DATA_PRUNE: "true"
+      EXECUTIONS_DATA_MAX_AGE: "168"
+      N8N_API_SERVICE_TOKEN: ${N8N_API_SERVICE_TOKEN}
+      N8N_WEBHOOK_SECRET: ${N8N_WEBHOOK_SECRET}
+    volumes:
+      - ../workflows/n8n:/workflows:ro
+      - ../scripts/n8n-import.sh:/scripts/n8n-import.sh:ro
+    depends_on:
+      postgres:
+        condition: service_healthy
+    restart: "no"
+
+  n8n:
+    image: n8nio/n8n:2.44.6
+    restart: unless-stopped
+    environment:
+      <<: *n8n_env
+      N8N_API_SERVICE_TOKEN: ""
+      N8N_WEBHOOK_SECRET: ""
+    volumes:
+      - n8ndata:/home/node/.n8n
+    ports:
+      - "127.0.0.1:${N8N_HOST_PORT:-5678}:5678"
+    depends_on:
+      n8n-import:
+        condition: service_completed_successfully
+    healthcheck:
+      test: ["CMD-SHELL", "wget -qO- http://127.0.0.1:5678/healthz >/dev/null 2>&1 || exit 1"]
+      interval: 10s
+      timeout: 5s
+      retries: 12
+
+  # --- Modelo local (solo CPU en Docker). Una petición a la vez. ---
+  ollama:
+    image: ollama/ollama:0.40.6
+    restart: unless-stopped
+    environment:
+      OLLAMA_NUM_PARALLEL: "1"
+      OLLAMA_MAX_LOADED_MODELS: "1"
+      OLLAMA_KEEP_ALIVE: 30m
+    volumes:
+      - ollamadata:/root/.ollama
+    ports:
+      - "127.0.0.1:${OLLAMA_HOST_PORT:-11434}:11434"
+    profiles: ["ai"]
+
+  # --- Interfaz del paciente ---
+  gradio:
+    build:
+      context: ../apps/demo-gradio
+    restart: unless-stopped
+    environment:
+      API_BASE_URL: http://api:8080/api/v1
+      BUSINESS_TIMEZONE: ${BUSINESS_TIMEZONE:-America/Santo_Domingo}
+      GRADIO_SERVER_NAME: 0.0.0.0
+      GRADIO_SERVER_PORT: "7860"
+      GRADIO_ANALYTICS_ENABLED: "False"
+      GRADIO_GATEWAY_TOKEN: ${GRADIO_GATEWAY_TOKEN:?definir en .env}
+      GRADIO_TRUST_PROXY_HEADERS: ${GRADIO_TRUST_PROXY_HEADERS:-false}
+      COOKIE_SECURE: ${COOKIE_SECURE:-false}
+    ports:
+      - "127.0.0.1:${GRADIO_HOST_PORT:-7860}:7860"
+    depends_on:
+      api:
+        condition: service_healthy
+
+volumes:
+  pgdata:
+  n8ndata:
+  ollamadata:

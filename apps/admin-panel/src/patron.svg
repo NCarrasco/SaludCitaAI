@@ -1,0 +1,13 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="168" height="168" viewBox="0 0 168 168" fill="none" stroke="#000" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round">
+  <!-- Patrón propio de SaludCita: agenda, conversación y asistencia. Se usa como máscara (el color lo da el tema). -->
+  <g transform="translate(14 16) rotate(-8)"><rect x="0" y="3" width="20" height="17" rx="3"/><path d="M0 8.5h20M5.5 0v5M14.5 0v5"/><path d="M5 13h2.5M9 13h2.5M13 13h2.5"/></g>
+  <g transform="translate(92 10) rotate(6)"><path d="M2 2h18a3 3 0 0 1 3 3v9a3 3 0 0 1-3 3H10l-6 5v-5H2a3 3 0 0 1-3-3V5a3 3 0 0 1 3-3z"/><path d="M5 8.5h12M5 12.5h8"/></g>
+  <g transform="translate(140 52)"><circle cx="9" cy="9" r="9"/><path d="M9 4v5l3.5 2.5"/></g>
+  <g transform="translate(52 66) rotate(12)"><path d="M6 0h6v6h6v6h-6v6H6v-6H0V6h6z"/></g>
+  <g transform="translate(18 104) rotate(-4)"><path d="M0 9l6 6L18 2"/></g>
+  <g transform="translate(108 96) rotate(-10)"><rect x="0" y="0" width="16" height="20" rx="2.5"/><path d="M4 6h8M4 10h8M4 14h5"/></g>
+  <g transform="translate(64 128) rotate(8)"><path d="M2 2h14a3 3 0 0 1 3 3v6a3 3 0 0 1-3 3h-2l1 5-6-5H2a3 3 0 0 1-3-3V5a3 3 0 0 1 3-3z"/></g>
+  <g transform="translate(146 136)"><circle cx="4" cy="4" r="1.6"/><circle cx="12" cy="4" r="1.6"/></g>
+  <g transform="translate(70 30)"><circle cx="2" cy="2" r="1.4"/></g>
+  <g transform="translate(130 150) rotate(-6)"><path d="M0 6h7l3-6 4 12 3-6h6"/></g>
+</svg>

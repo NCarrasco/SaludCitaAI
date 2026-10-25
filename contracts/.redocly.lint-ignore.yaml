@@ -1,0 +1,5 @@
+# Excepciones revisadas: las sondas de salud no tienen respuestas 4xx por diseño.
+openapi.yaml:
+  operation-4xx-response:
+    - '#/paths/~1api~1v1~1health~1live/get/responses'
+    - '#/paths/~1api~1v1~1health~1ready/get/responses'

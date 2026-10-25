@@ -1,0 +1,11 @@
+# Modo demostración del flujo de conversación en el editor de n8n (solo local).
+# La API avisa al webhook de PRUEBA (/webhook-test/...). Con el workflow «SaludCita · Conversación (IA local)» abierto en el
+# editor y «Listen for test event» pulsado, el siguiente mensaje enviado desde Gradio se ejecuta en el lienzo del editor.
+# Si nadie está escuchando, n8n rechaza el aviso y el disparador de recuperación (cada minuto) procesa el mensaje en
+# modo producción: el chat sigue funcionando, con hasta 1 minuto de espera.
+# Uso:    docker compose --env-file .env -f infra/compose.yaml -f infra/compose.demo-n8n.yaml --profile ai up -d api
+# Volver: docker compose --env-file .env -f infra/compose.yaml --profile ai up -d api
+services:
+  api:
+    environment:
+      N8N_CONVERSATION_WEBHOOK_URL: http://n8n:5678/webhook-test/saludcita-conversation

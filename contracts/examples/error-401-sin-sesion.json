@@ -1,0 +1,15 @@
+{
+  "request": {
+    "method": "GET",
+    "path": "/api/v1/stats/summary?from=2026-10-16&to=2026-11-16"
+  },
+  "status": 401,
+  "body": {
+    "error": {
+      "code": "unauthorized",
+      "message": "Autenticación requerida",
+      "details": {}
+    },
+    "request_id": "774dafc2-5ea3-4a49-af0d-fb88d8865aa1"
+  }
+}

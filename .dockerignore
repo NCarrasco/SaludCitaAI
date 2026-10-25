@@ -1,0 +1,14 @@
+**/node_modules
+**/dist
+**/.venv
+**/__pycache__
+.git
+.env
+.env.*
+!.env.example
+*.pdf
+docs/evidencias
+backups
+.data
+.clon-limpio
+restores

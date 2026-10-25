@@ -1,0 +1,20 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" role="img" aria-label="Robot asistente de SaludCita">
+  <style>
+    .eye { animation: blink 5s infinite; transform-origin: center 30px; transform-box: view-box; }
+    .led { animation: pulse 2.4s ease-in-out infinite; }
+    @keyframes blink { 0%, 92%, 100% { transform: scaleY(1); } 95% { transform: scaleY(.1); } }
+    @keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: .35; } }
+    @media (prefers-reduced-motion: reduce) { .eye, .led { animation: none; } }
+  </style>
+  <circle cx="32" cy="32" r="32" fill="#f1ecff"/>
+  <line x1="32" y1="9" x2="32" y2="16" stroke="#4a27b8" stroke-width="2.5" stroke-linecap="round"/>
+  <circle class="led" cx="32" cy="8" r="3.2" fill="#f43f5e"/>
+  <rect x="13" y="16" width="38" height="30" rx="10" fill="#ffffff" stroke="#4a27b8" stroke-width="2.5"/>
+  <rect x="9" y="26" width="4" height="10" rx="2" fill="#4a27b8"/>
+  <rect x="51" y="26" width="4" height="10" rx="2" fill="#4a27b8"/>
+  <rect x="18" y="22" width="28" height="15" rx="7" fill="#2c186b"/>
+  <g class="eye"><circle cx="26" cy="29.5" r="3" fill="#c4b5fd"/><circle cx="38" cy="29.5" r="3" fill="#c4b5fd"/></g>
+  <path d="M27 41.5 q5 3.2 10 0" fill="none" stroke="#4a27b8" stroke-width="2.2" stroke-linecap="round"/>
+  <rect x="22" y="47" width="20" height="10" rx="4" fill="#7c5cfa"/>
+  <path d="M32 49.5 v5 M29.5 52 h5" stroke="#ffffff" stroke-width="2" stroke-linecap="round"/>
+</svg>

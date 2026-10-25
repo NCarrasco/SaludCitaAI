@@ -1,0 +1,47 @@
+# Secretos y entornos locales
+.env
+.env.*
+!.env.example
+*.pem
+*.key
+
+# Dependencias y compilados
+node_modules/
+dist/
+coverage/
+__pycache__/
+*.pyc
+.venv/
+.pytest_cache/
+
+# Volúmenes, copias y datos locales
+.data/
+backups/
+*.dump
+*.sql.gz
+*.sql.gz.enc
+
+# Documentos internos del equipo (actas y notas con datos personales): no se publican
+docs/proyecto/interno/
+
+# Evidencias generadas localmente (se revisan antes de añadirlas)
+# Evidencias de pruebas y evaluaciones: se entregan en la carpeta de evidencias (Drive), no en el repositorio
+docs/evidencias/
+
+# Sistema y editores
+.DS_Store
+.idea/
+.vscode/
+*.log
+
+# Restauraciones locales (contienen secretos)
+restores/
+
+# Prototipo visual inicial del equipo (antecedente, no forma parte del sistema): solo local
+prototipo-html/
+
+# Copia limpia para probar la instalación (no se versiona)
+.clon-limpio/
+
+# Carpeta de entrega para Drive (informe y evidencias): no se versiona
+entrega-fase-2/

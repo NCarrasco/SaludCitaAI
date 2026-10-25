@@ -1,0 +1,79 @@
+# Superposición de PRODUCCIÓN (Contabo, Ubuntu 24.04 LTS). Uso:
+#   docker compose --env-file .env -f infra/compose.yaml -f infra/compose.prod.yaml --profile ai up -d --build
+# - Ningún servicio publica puertos al host salvo Caddy (80/443).
+# - PostgreSQL, API, n8n, Ollama y Gradio solo son accesibles por la red interna de Docker.
+# - Requiere en .env: APP_DOMAIN, CHAT_DOMAIN, N8N_DOMAIN, N8N_EDITOR_USER, N8N_EDITOR_PASSWORD_HASH,
+#   COOKIE_SECURE=true.
+
+x-logging: &logging
+  driver: json-file
+  options: { max-size: "10m", max-file: "5" }
+
+services:
+  postgres:
+    ports: !reset []
+    logging: *logging
+    mem_limit: 1g
+  api:
+    ports: !reset []
+    logging: *logging
+    mem_limit: 512m
+    environment:
+      COOKIE_SECURE: "true"
+      CORS_ALLOWED_ORIGINS: ""
+  migrate:
+    logging: *logging
+  n8n-import:
+    environment:
+      N8N_HOST: ${N8N_DOMAIN:?definir N8N_DOMAIN}
+      N8N_PROTOCOL: https
+      N8N_WEBHOOK_URL: https://${N8N_DOMAIN}/
+      N8N_SECURE_COOKIE: "true"
+  n8n:
+    ports: !reset []
+    logging: *logging
+    mem_limit: 1g
+    environment:
+      N8N_HOST: ${N8N_DOMAIN:?definir N8N_DOMAIN}
+      N8N_PROTOCOL: https
+      N8N_WEBHOOK_URL: https://${N8N_DOMAIN}/
+      N8N_SECURE_COOKIE: "true"
+      N8N_PROXY_HOPS: "1"
+  ollama:
+    ports: !reset []
+    logging: *logging
+    # Límite provisional: se ajustará tras medir el modelo en el VPS (pendiente)
+    mem_limit: 3g
+  gradio:
+    ports: !reset []
+    logging: *logging
+    mem_limit: 512m
+
+  caddy:
+    image: caddy:2.11.7-alpine
+    restart: unless-stopped
+    ports:
+      - "80:80"
+      - "443:443"
+      - "443:443/udp"
+    environment:
+      APP_DOMAIN: ${APP_DOMAIN:?definir APP_DOMAIN}
+      CHAT_DOMAIN: ${CHAT_DOMAIN:?definir CHAT_DOMAIN}
+      N8N_DOMAIN: ${N8N_DOMAIN:?definir N8N_DOMAIN}
+      N8N_BASIC_AUTH: ${N8N_BASIC_AUTH:-on}
+      N8N_EDITOR_USER: ${N8N_EDITOR_USER:-}
+      N8N_EDITOR_PASSWORD_HASH: ${N8N_EDITOR_PASSWORD_HASH:-}
+    volumes:
+      - ./Caddyfile:/etc/caddy/Caddyfile:ro
+      - ./n8n-auth-on.caddy:/etc/caddy/n8n-auth-on.caddy:ro
+      - ./n8n-auth-off.caddy:/etc/caddy/n8n-auth-off.caddy:ro
+      - caddydata:/data
+      - caddyconfig:/config
+    depends_on:
+      api:
+        condition: service_healthy
+    logging: *logging
+
+volumes:
+  caddydata:
+  caddyconfig:

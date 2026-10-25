@@ -1,0 +1,158 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex, nofollow">
+<title>Hospital Simulado SaludCita · Consulta externa</title>
+<link rel="icon" href="/salu.svg" type="image/svg+xml">
+<style>
+  /* Sitio de demostración del hospital simulado. Paleta compartida con el chat y el panel. */
+  :root {
+    --brand: #5b34d6; --brand-strong: #3f1fae; --brand-soft: #ece6fd; --bg: #f6f4fc; --paper: #fff; --ink: #17132b; --muted: #5d5873;
+    --line: #e6e2f1; --accent: #c2185b; --live: #12a150; --shadow: 0 18px 50px rgba(40, 24, 110, .22);
+    --font: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  }
+  * { box-sizing: border-box; }
+  body { margin: 0; font-family: var(--font); color: var(--ink); background: var(--bg); line-height: 1.55; }
+  a { color: var(--brand-strong); }
+  .top { display: flex; align-items: center; justify-content: space-between; gap: 1rem; padding: 1rem clamp(1rem, 5vw, 4rem); background: var(--paper); border-bottom: 1px solid var(--line); }
+  .logo { display: flex; align-items: center; gap: .6rem; font-weight: 750; letter-spacing: -.01em; }
+  .logo b { display: grid; place-items: center; width: 34px; height: 34px; border-radius: 10px; background: var(--brand); color: #fff; font-size: 1.2rem; }
+  .logo small { display: block; font-size: .72rem; font-weight: 600; color: var(--muted); letter-spacing: .08em; text-transform: uppercase; }
+  .top nav { display: flex; gap: 1.2rem; font-size: .92rem; }
+  .top nav a { color: var(--muted); text-decoration: none; }
+  .top nav a:hover { color: var(--brand-strong); }
+  .hero { max-width: 1120px; margin: 0 auto; padding: clamp(2.5rem, 7vw, 5.5rem) clamp(1rem, 5vw, 4rem) 2rem; display: grid; grid-template-columns: 1.2fr .8fr; gap: 3rem; align-items: center; }
+  .hero h1 { font-size: clamp(2rem, 4.6vw, 3.4rem); line-height: 1.08; letter-spacing: -.03em; margin: .4rem 0 1rem; }
+  .hero h1 em { font-style: normal; color: var(--brand); }
+  .eyebrow { font-size: .78rem; font-weight: 700; letter-spacing: .1em; text-transform: uppercase; color: var(--muted); }
+  .hero p { font-size: 1.1rem; color: var(--muted); max-width: 52ch; }
+  .cta { display: inline-flex; align-items: center; gap: .6rem; margin-top: 1.2rem; padding: .85rem 1.3rem; border: 0; border-radius: 999px; background: var(--brand); color: #fff;
+    font: inherit; font-weight: 650; cursor: pointer; box-shadow: 0 8px 22px rgba(91, 52, 214, .35); transition: transform 160ms ease-out; }
+  .cta:active { transform: scale(.97); }
+  .hero-card { background: var(--paper); border: 1px solid var(--line); border-radius: 22px; padding: 1.4rem; box-shadow: var(--shadow); }
+  .hero-card .row { display: flex; gap: .7rem; align-items: flex-start; margin: .6rem 0; }
+  .bubble { background: var(--brand-soft); color: var(--ink); border-radius: 16px 16px 16px 4px; padding: .7rem .9rem; font-size: .95rem; }
+  .bubble.me { margin-left: auto; background: var(--brand); color: #fff; border-radius: 16px 16px 4px 16px; }
+  .hero-card img { width: 34px; height: 34px; }
+  .grid { max-width: 1120px; margin: 0 auto; padding: 1rem clamp(1rem, 5vw, 4rem) 6rem; display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 1rem; }
+  .card { background: var(--paper); border: 1px solid var(--line); border-radius: 16px; padding: 1.3rem; }
+  .card h2 { font-size: 1.05rem; margin: 0 0 .4rem; }
+  .card p, .card li { color: var(--muted); font-size: .95rem; margin: 0; }
+  .card ul { padding-left: 1.1rem; margin: 0; }
+  .note { max-width: 1120px; margin: -4rem auto 0; padding: 0 clamp(1rem, 5vw, 4rem) 7rem; font-size: .82rem; color: var(--muted); }
+  @media (max-width: 860px) { .hero { grid-template-columns: 1fr; } .grid { grid-template-columns: 1fr; } .top nav { display: none; } }
+
+  /* ---------- Asistente flotante ---------- */
+  .salu-launcher { position: fixed; right: 22px; bottom: 22px; z-index: 1001; width: 66px; height: 66px; border-radius: 50%; border: 0; cursor: pointer;
+    background: var(--brand); box-shadow: 0 10px 28px rgba(91, 52, 214, .45); display: grid; place-items: center; transition: transform 200ms cubic-bezier(.23, 1, .32, 1); }
+  .salu-launcher:hover { transform: scale(1.05); }
+  .salu-launcher:active { transform: scale(.95); }
+  .salu-launcher:focus-visible { outline: 3px solid var(--brand-strong); outline-offset: 3px; }
+  .salu-launcher img { width: 44px; height: 44px; background: #fff; border-radius: 50%; padding: 3px; transition: opacity 160ms ease, transform 200ms ease; }
+  .salu-launcher .x { position: absolute; color: #fff; font-size: 26px; line-height: 1; opacity: 0; transform: rotate(-90deg); transition: opacity 160ms ease, transform 200ms ease; }
+  .salu-open .salu-launcher img { opacity: 0; transform: rotate(90deg) scale(.6); }
+  .salu-open .salu-launcher .x { opacity: 1; transform: none; }
+  .salu-launcher .dot { position: absolute; top: 4px; right: 4px; width: 14px; height: 14px; border-radius: 50%; background: var(--live); border: 2px solid #fff; }
+  .salu-open .salu-launcher .dot { display: none; }
+  .salu-teaser { position: fixed; right: 100px; bottom: 34px; z-index: 1000; max-width: 260px; background: var(--paper); color: var(--ink); border: 1px solid var(--line);
+    border-radius: 16px 16px 4px 16px; padding: .75rem 1rem; box-shadow: var(--shadow); font-size: .93rem; cursor: pointer;
+    opacity: 0; transform: translateY(8px); transition: opacity 240ms ease, transform 240ms cubic-bezier(.23, 1, .32, 1); pointer-events: none; }
+  .salu-teaser.show { opacity: 1; transform: none; pointer-events: auto; }
+  .salu-open .salu-teaser { display: none; }
+  .salu-panel { position: fixed; right: 22px; bottom: 100px; z-index: 1000; width: min(420px, calc(100vw - 32px)); height: min(720px, calc(100dvh - 124px));
+    border-radius: 22px; overflow: hidden; background: var(--paper); box-shadow: var(--shadow); border: 1px solid var(--line);
+    transform-origin: bottom right; opacity: 0; transform: translateY(12px) scale(.96); visibility: hidden;
+    transition: opacity 200ms ease, transform 240ms cubic-bezier(.23, 1, .32, 1), visibility 0s linear 240ms; }
+  .salu-open .salu-panel { opacity: 1; transform: none; visibility: visible; transition: opacity 200ms ease, transform 260ms cubic-bezier(.23, 1, .32, 1); }
+  .salu-panel iframe { width: 100%; height: 100%; border: 0; display: block; }
+  @media (max-width: 560px) {
+    /* Móvil: el chat a pantalla completa; se cierra con el botón ⌄ de su cabecera */
+    .salu-panel { inset: 0 auto auto 0; width: 100vw; height: 100dvh; border-radius: 0; border: 0; transition: none !important; transform: none !important; }
+    html.salu-lock, html.salu-lock body { overflow: hidden; overscroll-behavior: none; }
+    .salu-open .salu-launcher { opacity: 0; pointer-events: none; }
+    .salu-teaser { right: 96px; bottom: 30px; max-width: calc(100vw - 120px); }
+  }
+  @media (prefers-reduced-motion: reduce) { .salu-panel, .salu-launcher, .salu-teaser, .salu-launcher img, .salu-launcher .x { transition: none; } }
+</style>
+</head>
+<body>
+<header class="top">
+  <div class="logo"><b aria-hidden="true">+</b><span>Hospital Simulado SaludCita<small>Consulta externa · Santo Domingo</small></span></div>
+  <nav aria-label="Secciones"><a href="#especialidades">Especialidades</a><a href="#como">Cómo reservar</a><a href="#contacto">Contacto</a></nav>
+</header>
+<main>
+  <section class="hero">
+    <div>
+      <p class="eyebrow">Citas de consulta externa</p>
+      <h1>Tu cita médica, <em>en una conversación</em>.</h1>
+      <p>Habla con Salu, nuestra asistente virtual: reserva, cambia o cancela tus citas escribiendo con tus palabras, consulta horarios y precios, y recibe tu comprobante al instante.</p>
+      <button class="cta" type="button" data-salu-open>Hablar con Salu</button>
+    </div>
+    <div class="hero-card" aria-hidden="true">
+      <div class="row"><img src="/salu.svg" alt=""><div class="bubble">¡Hola! Soy Salu 👋 ¿En qué te ayudo hoy?</div></div>
+      <div class="row"><div class="bubble me">Necesito un pediatra para mi hijo el martes</div></div>
+      <div class="row"><img src="/salu.svg" alt=""><div class="bubble">Claro. El martes por la mañana hay horarios a las 8:00, 8:20 y 8:40. ¿Cuál prefieres?</div></div>
+    </div>
+  </section>
+  <section class="grid">
+    <article class="card" id="especialidades"><h2>Especialidades</h2><p>Cardiología, Medicina Interna y Pediatría, con médicos de horario fijo cada semana.</p></article>
+    <article class="card" id="como"><h2>Cómo reservar</h2><ul><li>Escríbele a Salu lo que necesitas.</li><li>Elige un horario de los que te ofrece.</li><li>Pulsa «Confirmar»: recibes tu comprobante en PDF.</li></ul></article>
+    <article class="card" id="contacto"><h2>Atención presencial</h2><p>Si prefieres hablar con una persona, pídeselo a Salu y tu solicitud pasa al personal administrativo. En una urgencia, acude a emergencias o llama al 9-1-1.</p></article>
+  </section>
+  <p class="note">Prototipo académico (UASD, G6). Hospital, médicos y pacientes son ficticios. El asistente gestiona citas administrativas: no diagnostica ni hace triaje.</p>
+</main>
+
+<div class="salu" id="salu">
+  <div class="salu-teaser" id="salu-teaser" role="button" tabindex="0">¡Hola! Soy <strong>Salu</strong> 👋 ¿Te ayudo con tu cita?</div>
+  <div class="salu-panel" id="salu-panel" role="dialog" aria-label="Chat con Salu, asistente de SaludCita"></div>
+  <button class="salu-launcher" id="salu-launcher" type="button" aria-expanded="false" aria-controls="salu-panel" aria-label="Abrir el chat con Salu">
+    <img src="/salu.svg" alt=""><span class="x" aria-hidden="true">✕</span><span class="dot" aria-hidden="true"></span>
+  </button>
+</div>
+<script>
+(() => {
+  const root = document.getElementById('salu'), panel = document.getElementById('salu-panel'),
+        btn = document.getElementById('salu-launcher'), teaser = document.getElementById('salu-teaser');
+  let loaded = false;
+  const get = (k) => { try { return sessionStorage.getItem(k); } catch (e) { return null; } };
+  const set = (k, v) => { try { sessionStorage.setItem(k, v); } catch (e) { /* sin almacenamiento */ } };
+  function open() {
+    // El chat se carga al abrir por primera vez (no antes): la página principal carga rápido
+    if (!loaded) { const f = document.createElement('iframe'); f.src = '/chat/'; f.setAttribute('aria-label', 'Chat con Salu'); f.allow = 'clipboard-write; autoplay'; panel.appendChild(f); loaded = true; }
+    document.body.classList.add('salu-open'); btn.setAttribute('aria-expanded', 'true'); btn.setAttribute('aria-label', 'Cerrar el chat');
+    set('salu-state', 'open');
+  }
+  function close() {
+    document.body.classList.remove('salu-open'); btn.setAttribute('aria-expanded', 'false'); btn.setAttribute('aria-label', 'Abrir el chat con Salu');
+    set('salu-state', 'closed'); btn.focus();
+  }
+  btn.addEventListener('click', () => (document.body.classList.contains('salu-open') ? close() : open()));
+  teaser.addEventListener('click', open);
+  teaser.addEventListener('keydown', (e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); open(); } });
+  document.querySelectorAll('[data-salu-open]').forEach((b) => b.addEventListener('click', open));
+  addEventListener('keydown', (e) => { if (e.key === 'Escape' && document.body.classList.contains('salu-open')) close(); });
+  // El botón ⌄ de la cabecera del chat (dentro del iframe, mismo origen) pide cerrar el panel
+  addEventListener('message', (e) => { if (e.origin === location.origin && e.data && e.data.type === 'salu:close') close(); });
+  // Móvil: el panel ocupa solo el área VISIBLE (encima del teclado). Sin esto, iOS sube toda la página al enfocar la caja
+  // de texto y la cabecera del chat queda fuera de la pantalla. La página de fondo no se desplaza mientras el chat está abierto.
+  const mobile = matchMedia('(max-width: 560px)'), vv = window.visualViewport;
+  const fitPanel = () => {
+    const on = mobile.matches && document.body.classList.contains('salu-open');
+    document.documentElement.classList.toggle('salu-lock', on);
+    if (!on || !vv) { panel.style.top = panel.style.height = ''; return; }
+    panel.style.top = vv.offsetTop + 'px';
+    panel.style.height = vv.height + 'px';
+  };
+  if (vv) { vv.addEventListener('resize', fitPanel); vv.addEventListener('scroll', fitPanel); }
+  mobile.addEventListener('change', fitPanel);
+  new MutationObserver(fitPanel).observe(document.body, { attributes: true, attributeFilter: ['class'] });
+  // Al entrar: Salu se presenta y abre el chat (una vez por visita; si el paciente lo cerró, solo saluda)
+  const state = get('salu-state');
+  setTimeout(() => teaser.classList.add('show'), 600);
+  if (state !== 'closed') setTimeout(open, state === 'open' ? 0 : 1800);
+})();
+</script>
+</body>
+</html>

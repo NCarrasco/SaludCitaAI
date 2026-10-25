@@ -1,0 +1,4 @@
+# Autenticación básica delante del editor de n8n (se importa dentro del bloque del dominio de n8n)
+basic_auth {
+	{$N8N_EDITOR_USER} {$N8N_EDITOR_PASSWORD_HASH}
+}

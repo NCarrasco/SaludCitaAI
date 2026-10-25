@@ -1,0 +1,587 @@
+{
+  "id": "scCommands01",
+  "name": "SaludCita · Comandos durables",
+  "active": false,
+  "nodes": [
+    {
+      "id": "cmd-webhook",
+      "name": "1 · Aviso de la API (webhook)",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2.2,
+      "position": [
+        0,
+        0
+      ],
+      "webhookId": "5a1c1d7e-2f3b-4c55-9a77-5a1d0c170002",
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "saludcita-commands",
+        "authentication": "headerAuth",
+        "responseMode": "onReceived",
+        "options": {}
+      },
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "scWebhookSecret01",
+          "name": "SaludCita webhook (secreto compartido)"
+        }
+      }
+    },
+    {
+      "id": "cmd-schedule",
+      "name": "1b · Cada 30 s (recuperación tras caídas)",
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.2,
+      "position": [
+        0,
+        220
+      ],
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "field": "seconds",
+              "secondsInterval": 30
+            }
+          ]
+        }
+      }
+    },
+    {
+      "id": "cmd-claim",
+      "name": "2 · API: reclamar comandos (lease)",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.5,
+      "position": [
+        240,
+        100
+      ],
+      "parameters": {
+        "method": "POST",
+        "url": "http://api:8080/api/v1/internal/commands/claim",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify({ limit: 10 }) }}",
+        "options": {
+          "timeout": 15000
+        }
+      },
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "scApiServiceCred01",
+          "name": "SaludCita API (servicio n8n)"
+        }
+      }
+    },
+    {
+      "id": "cmd-split",
+      "name": "3 · Un comando a la vez",
+      "type": "n8n-nodes-base.splitOut",
+      "typeVersion": 1,
+      "position": [
+        480,
+        100
+      ],
+      "parameters": {
+        "fieldToSplitOut": "items",
+        "options": {}
+      }
+    },
+    {
+      "id": "cmd-switch",
+      "name": "4 · ¿Qué comando?",
+      "type": "n8n-nodes-base.switch",
+      "typeVersion": 3.2,
+      "position": [
+        720,
+        100
+      ],
+      "parameters": {
+        "rules": {
+          "values": [
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 2
+                },
+                "conditions": [
+                  {
+                    "id": "Confirmar cita",
+                    "leftValue": "={{ $json.kind }}",
+                    "rightValue": "appointment.confirm",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "Confirmar cita"
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 2
+                },
+                "conditions": [
+                  {
+                    "id": "Responder adelanto",
+                    "leftValue": "={{ $json.kind }}",
+                    "rightValue": "offer.answer",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "Responder adelanto"
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 2
+                },
+                "conditions": [
+                  {
+                    "id": "Comprobante PDF",
+                    "leftValue": "={{ $json.kind }}",
+                    "rightValue": "receipt.render",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "Comprobante PDF"
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 2
+                },
+                "conditions": [
+                  {
+                    "id": "Recordatorio",
+                    "leftValue": "={{ $json.kind }}",
+                    "rightValue": "reminder.",
+                    "operator": {
+                      "type": "string",
+                      "operation": "startsWith"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "Recordatorio"
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 2
+                },
+                "conditions": [
+                  {
+                    "id": "Limpieza de invitados",
+                    "leftValue": "={{ $json.kind }}",
+                    "rightValue": "maintenance.guest_cleanup",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "Limpieza de invitados"
+            }
+          ]
+        },
+        "options": {
+          "fallbackOutput": "extra",
+          "renameFallbackOutput": "Tipo desconocido"
+        }
+      }
+    },
+    {
+      "id": "cmd-receipt",
+      "name": "5a · API: generar comprobante PDF",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.5,
+      "position": [
+        980,
+        -80
+      ],
+      "parameters": {
+        "method": "POST",
+        "url": "={{ 'http://api:8080/api/v1/internal/commands/' + $('3 · Un comando a la vez').item.json.command_id + '/receipt' }}",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify({ lease_token: $('3 · Un comando a la vez').item.json.lease_token }) }}",
+        "options": {
+          "timeout": 30000
+        }
+      },
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "scApiServiceCred01",
+          "name": "SaludCita API (servicio n8n)"
+        }
+      },
+      "onError": "continueErrorOutput"
+    },
+    {
+      "id": "cmd-reminder",
+      "name": "5b · API: publicar recordatorio",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.5,
+      "position": [
+        980,
+        100
+      ],
+      "parameters": {
+        "method": "POST",
+        "url": "={{ 'http://api:8080/api/v1/internal/commands/' + $('3 · Un comando a la vez').item.json.command_id + '/reminder' }}",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify({ lease_token: $('3 · Un comando a la vez').item.json.lease_token }) }}",
+        "options": {
+          "timeout": 30000
+        }
+      },
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "scApiServiceCred01",
+          "name": "SaludCita API (servicio n8n)"
+        }
+      },
+      "onError": "continueErrorOutput"
+    },
+    {
+      "id": "cmd-cleanup",
+      "name": "5c · API: limpiar sesiones invitadas",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.5,
+      "position": [
+        980,
+        280
+      ],
+      "parameters": {
+        "method": "POST",
+        "url": "={{ 'http://api:8080/api/v1/internal/commands/' + $('3 · Un comando a la vez').item.json.command_id + '/guest-cleanup' }}",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify({ lease_token: $('3 · Un comando a la vez').item.json.lease_token }) }}",
+        "options": {
+          "timeout": 30000
+        }
+      },
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "scApiServiceCred01",
+          "name": "SaludCita API (servicio n8n)"
+        }
+      },
+      "onError": "continueErrorOutput"
+    },
+    {
+      "id": "cmd-fail",
+      "name": "6 · API: registrar fallo (reintento con espera)",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.5,
+      "position": [
+        1260,
+        280
+      ],
+      "parameters": {
+        "method": "POST",
+        "url": "={{ 'http://api:8080/api/v1/internal/commands/' + $('3 · Un comando a la vez').item.json.command_id + '/fail' }}",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify({ lease_token: $('3 · Un comando a la vez').item.json.lease_token, error: String(($json.error && ($json.error.message || $json.error)) || 'fallo en n8n').slice(0, 1900) }) }}",
+        "options": {
+          "timeout": 30000
+        }
+      },
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "scApiServiceCred01",
+          "name": "SaludCita API (servicio n8n)"
+        }
+      }
+    },
+    {
+      "id": "cmd-note",
+      "name": "Cómo leer este flujo",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        160,
+        -560
+      ],
+      "parameters": {
+        "width": 900,
+        "height": 300,
+        "content": "## Comandos durables (cada comando = un paso real)\n**Confirmar cita:** al pulsar «Confirmar», la API solo valida y encarga `appointment.confirm`. Este flujo lo reclama y la rama 5 pide a la API que reserve, cancele o reprograme (la API revalida identidad, agenda y versión en su transacción). La misma transacción encarga el comprobante PDF y los recordatorios, que vuelven a entrar aquí (5a/5b). Todo lleva el mismo `correlation_id`.\n**Responder adelanto:** aceptar o rechazar desde Avisos encarga `offer.answer`; la rama 5d pide a la API mover la cita (o pasar la oferta al siguiente), con el plazo evaluado en el momento en que el paciente respondió.\nPasos: 2 · reclamar con lease → 3 · uno a uno → 4 · enrutar por tipo → 5/5a/5b/5c · la API ejecuta → 6 · si algo falla, reintento con espera.\nSi n8n se cae, el lease vence y el comando se reclama de nuevo (1b cada 30 s); una confirmación no ejecutada en 120 s se descarta sin cambios."
+      }
+    },
+    {
+      "id": "cmd-confirm",
+      "name": "5 · API: confirmar cita (reserva, cancelación o reprogramación)",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.5,
+      "position": [
+        980,
+        -260
+      ],
+      "parameters": {
+        "method": "POST",
+        "url": "={{ 'http://api:8080/api/v1/internal/commands/' + $('3 · Un comando a la vez').item.json.command_id + '/confirm' }}",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify({ lease_token: $('3 · Un comando a la vez').item.json.lease_token }) }}",
+        "options": {
+          "timeout": 30000
+        }
+      },
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "scApiServiceCred01",
+          "name": "SaludCita API (servicio n8n)"
+        }
+      },
+      "onError": "continueErrorOutput"
+    },
+    {
+      "id": "cmd-offer-answer",
+      "name": "5d · API: responder adelanto (aceptar o rechazar)",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.5,
+      "position": [
+        980,
+        -170
+      ],
+      "parameters": {
+        "method": "POST",
+        "url": "={{ 'http://api:8080/api/v1/internal/commands/' + $('3 · Un comando a la vez').item.json.command_id + '/offer-answer' }}",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify({ lease_token: $('3 · Un comando a la vez').item.json.lease_token }) }}",
+        "options": {
+          "timeout": 30000
+        }
+      },
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "scApiServiceCred01",
+          "name": "SaludCita API (servicio n8n)"
+        }
+      },
+      "onError": "continueErrorOutput"
+    }
+  ],
+  "connections": {
+    "1 · Aviso de la API (webhook)": {
+      "main": [
+        [
+          {
+            "node": "2 · API: reclamar comandos (lease)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "1b · Cada 30 s (recuperación tras caídas)": {
+      "main": [
+        [
+          {
+            "node": "2 · API: reclamar comandos (lease)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "2 · API: reclamar comandos (lease)": {
+      "main": [
+        [
+          {
+            "node": "3 · Un comando a la vez",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "3 · Un comando a la vez": {
+      "main": [
+        [
+          {
+            "node": "4 · ¿Qué comando?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "4 · ¿Qué comando?": {
+      "main": [
+        [
+          {
+            "node": "5 · API: confirmar cita (reserva, cancelación o reprogramación)",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "5d · API: responder adelanto (aceptar o rechazar)",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "5a · API: generar comprobante PDF",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "5b · API: publicar recordatorio",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "5c · API: limpiar sesiones invitadas",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "6 · API: registrar fallo (reintento con espera)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "5a · API: generar comprobante PDF": {
+      "main": [
+        [],
+        [
+          {
+            "node": "6 · API: registrar fallo (reintento con espera)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "5b · API: publicar recordatorio": {
+      "main": [
+        [],
+        [
+          {
+            "node": "6 · API: registrar fallo (reintento con espera)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "5c · API: limpiar sesiones invitadas": {
+      "main": [
+        [],
+        [
+          {
+            "node": "6 · API: registrar fallo (reintento con espera)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "5 · API: confirmar cita (reserva, cancelación o reprogramación)": {
+      "main": [
+        [],
+        [
+          {
+            "node": "6 · API: registrar fallo (reintento con espera)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "5d · API: responder adelanto (aceptar o rechazar)": {
+      "main": [
+        [],
+        [
+          {
+            "node": "6 · API: registrar fallo (reintento con espera)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1",
+    "timezone": "America/Santo_Domingo",
+    "saveDataSuccessExecution": "all",
+    "saveDataErrorExecution": "all",
+    "saveExecutionProgress": true,
+    "callerPolicy": "workflowsFromSameOwner"
+  },
+  "pinData": {},
+  "tags": [],
+  "meta": {
+    "saludcita": "Exportado sin secretos. Credenciales por nombre/ID: se crean con scripts/n8n-import.sh",
+    "saludcita_publish": true
+  }
+}

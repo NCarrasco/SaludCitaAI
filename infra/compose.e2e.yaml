@@ -1,0 +1,24 @@
+# Solo para pruebas de interfaz (Playwright). NO usar en producción.
+# Instancia de Gradio separada (puerto 7861, solo 127.0.0.1) que confía en X-Forwarded-For para que cada ejecución de
+# pruebas use su propia IP de documentación (198.18.x.x) y no comparta los contadores de límites por IP con el uso
+# normal ni con ejecuciones anteriores. Los límites siguen activos y con los mismos valores; la instancia normal
+# (7860) no confía en esa cabecera.
+# Uso: docker compose --env-file .env -f infra/compose.yaml -f infra/compose.e2e.yaml --profile e2e up -d gradio-e2e
+services:
+  gradio-e2e:
+    build:
+      context: ../apps/demo-gradio
+    restart: "no"
+    environment:
+      API_BASE_URL: http://api:8080/api/v1
+      BUSINESS_TIMEZONE: ${BUSINESS_TIMEZONE:-America/Santo_Domingo}
+      GRADIO_ANALYTICS_ENABLED: "False"
+      GRADIO_GATEWAY_TOKEN: ${GRADIO_GATEWAY_TOKEN:?definir en .env}
+      GRADIO_TRUST_PROXY_HEADERS: "true"
+      COOKIE_SECURE: "false"
+    ports:
+      - "127.0.0.1:${GRADIO_E2E_PORT:-7861}:7860"
+    depends_on:
+      api:
+        condition: service_healthy
+    profiles: ["e2e"]

@@ -1,0 +1,40 @@
+# Proxy HTTPS (certificados automáticos de Let's Encrypt). Dominios y correo por variables de entorno.
+# Sin correo de Let's Encrypt: Caddy obtiene y renueva igual los certificados (solo no envía avisos por correo).
+# Para recibirlos, añade al inicio un bloque global:  { email equipo@dominio }
+
+(seguridad) {
+	header {
+		Strict-Transport-Security "max-age=31536000; includeSubDomains"
+		X-Content-Type-Options "nosniff"
+		Referrer-Policy "same-origin"
+		-Server
+	}
+}
+
+# Panel administrativo y API en el MISMO origen (cookie HttpOnly + CSRF sin CORS)
+{$APP_DOMAIN} {
+	import seguridad
+	encode zstd gzip
+	# Los endpoints internos solo se usan desde la red de Docker (n8n → api:8080)
+	@internos path /api/v1/internal/*
+	respond @internos 404
+	reverse_proxy api:8080
+}
+
+# Chat de pacientes (Gradio)
+{$CHAT_DOMAIN} {
+	import seguridad
+	encode zstd gzip
+	reverse_proxy gradio:7860
+}
+
+# Editor de n8n: autenticación básica delante del propio login de n8n.
+# Los webhooks de conversación se llaman por la red interna (http://n8n:5678), no por este dominio.
+{$N8N_DOMAIN} {
+	import seguridad
+	@webhooks path /webhook/* /webhook-test/*
+	respond @webhooks 404
+	# Capa opcional de usuario y contraseña delante del login de n8n: N8N_BASIC_AUTH=on (por defecto) u off
+	import /etc/caddy/n8n-auth-{$N8N_BASIC_AUTH:on}.caddy
+	reverse_proxy n8n:5678
+}

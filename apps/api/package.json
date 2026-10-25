@@ -1,0 +1,41 @@
+{
+  "name": "@saludcita/api",
+  "version": "0.1.0",
+  "private": true,
+  "description": "API REST de SaludCita AI (agenda transaccional, identidad y estadísticas)",
+  "type": "module",
+  "engines": {
+    "node": ">=24.0.0 <25"
+  },
+  "scripts": {
+    "build": "tsc -p tsconfig.json",
+    "typecheck": "tsc -p tsconfig.json --noEmit",
+    "start": "node dist/server.js",
+    "dev": "tsx watch src/server.ts",
+    "db": "tsx src/db/cli.ts",
+    "openapi:export": "tsx src/openapi-export.ts",
+    "openapi:lint": "redocly lint ../../contracts/openapi.yaml --config ../../contracts/redocly.yaml",
+    "test": "vitest run"
+  },
+  "dependencies": {
+    "@fastify/cookie": "11.1.3",
+    "@fastify/cors": "11.3.1",
+    "@fastify/rate-limit": "11.2.1",
+    "@fastify/static": "10.1.7",
+    "@fastify/swagger": "9.9.2",
+    "@fastify/type-provider-typebox": "6.3.0",
+    "fastify": "5.12.7",
+    "fastify-plugin": "6.0.1",
+    "pg": "8.23.1",
+    "typebox": "1.4.3",
+    "yaml": "2.9.1"
+  },
+  "devDependencies": {
+    "@redocly/cli": "2.71.0",
+    "@types/node": "24.19.2",
+    "@types/pg": "8.23.1",
+    "tsx": "4.23.15",
+    "typescript": "7.0.2",
+    "vitest": "5.0.5"
+  }
+}

@@ -1,0 +1,11 @@
+# Ajustes del VPS de demostración (Contabo Cloud VPS 30: 8 vCPU AMD EPYC, 23 GB, sin GPU). Uso, después de compose.prod.yaml:
+#   docker compose --env-file .env -f infra/compose.yaml -f infra/compose.prod.yaml -f infra/compose.vps.yaml --profile ai up -d --build
+# El modelo local (respaldo de Groq, qwen3:1.7b) corre en CPU: se le reservan 6 de los 8 núcleos y memoria de sobra,
+# dejando el resto a los demás servicios.
+services:
+  ollama:
+    mem_limit: 12g
+    cpus: 6
+    environment:
+      OLLAMA_NUM_PARALLEL: "1"
+      OLLAMA_MAX_LOADED_MODELS: "1"

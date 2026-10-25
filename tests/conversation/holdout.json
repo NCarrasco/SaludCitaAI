@@ -1,0 +1,291 @@
+{
+ "version": "control-v1",
+ "notes": "Batería de control redactada antes de los ajustes v2 del motor; no se usó para ajustarlos.",
+ "cases": [
+  {
+   "id": "H-B01",
+   "text": "Buenas, me gustaría pedir turno con cardiología para el miércoles",
+   "operation": "book",
+   "clarity": "clara",
+   "specialty_label": "Cardiología",
+   "context": {
+    "step": "idle",
+    "options_offered": 0
+   },
+   "expected": {
+    "intent": "book",
+    "specialty": "Cardiología",
+    "date_phrase": "el miércoles",
+    "time_of_day": null,
+    "option_number": null,
+    "booking_reference": null
+   }
+  },
+  {
+   "id": "H-B02",
+   "text": "¿Hay disponibilidad en pediatría esta semana?",
+   "operation": "book",
+   "clarity": "clara",
+   "specialty_label": "Pediatría",
+   "context": {
+    "step": "idle",
+    "options_offered": 0
+   },
+   "expected": {
+    "intent": "book",
+    "specialty": "Pediatría",
+    "date_phrase": "esta semana",
+    "time_of_day": null,
+    "option_number": null,
+    "booking_reference": null
+   }
+  },
+  {
+   "id": "H-B03",
+   "text": "necesito un turno con medicina interna en la tarde",
+   "operation": "book",
+   "clarity": "clara",
+   "specialty_label": "Medicina Interna",
+   "context": {
+    "step": "idle",
+    "options_offered": 0
+   },
+   "expected": {
+    "intent": "book",
+    "specialty": "Medicina Interna",
+    "date_phrase": null,
+    "time_of_day": "afternoon",
+    "option_number": null,
+    "booking_reference": null
+   }
+  },
+  {
+   "id": "H-B04",
+   "text": "quiero que me vea el doctor Taveras",
+   "operation": "book",
+   "clarity": "clara",
+   "specialty_label": "Cardiología",
+   "context": {
+    "step": "idle",
+    "options_offered": 0
+   },
+   "expected": {
+    "intent": "book",
+    "specialty": "Cardiología",
+    "date_phrase": null,
+    "time_of_day": null,
+    "option_number": null,
+    "booking_reference": null
+   }
+  },
+  {
+   "id": "H-T01",
+   "text": "sita pa la pediatra el lune",
+   "operation": "book",
+   "clarity": "errores_tipograficos",
+   "specialty_label": "Pediatría",
+   "context": {
+    "step": "idle",
+    "options_offered": 0
+   },
+   "expected": {
+    "intent": "book",
+    "specialty": "Pediatría",
+    "date_phrase": "el lunes",
+    "time_of_day": null,
+    "option_number": null,
+    "booking_reference": null
+   }
+  },
+  {
+   "id": "H-T02",
+   "text": "cardiologia mñana temprano",
+   "operation": "book",
+   "clarity": "errores_tipograficos",
+   "specialty_label": "Cardiología",
+   "context": {
+    "step": "idle",
+    "options_offered": 0
+   },
+   "expected": {
+    "intent": "book",
+    "specialty": "Cardiología",
+    "date_phrase": null,
+    "time_of_day": "morning",
+    "option_number": null,
+    "booking_reference": null
+   }
+  },
+  {
+   "id": "H-A01",
+   "text": "Necesito una consulta",
+   "operation": "book",
+   "clarity": "ambigua",
+   "specialty_label": "n/a",
+   "context": {
+    "step": "idle",
+    "options_offered": 0
+   },
+   "expected": {
+    "intent": "book",
+    "specialty": null,
+    "date_phrase": null,
+    "time_of_day": null,
+    "option_number": null,
+    "booking_reference": null
+   }
+  },
+  {
+   "id": "H-X01",
+   "text": "la primera",
+   "operation": "select",
+   "clarity": "contexto",
+   "specialty_label": "n/a",
+   "context": {
+    "step": "choosing_slot",
+    "options_offered": 3
+   },
+   "expected": {
+    "intent": "select_option",
+    "specialty": null,
+    "date_phrase": null,
+    "time_of_day": null,
+    "option_number": 1,
+    "booking_reference": null
+   }
+  },
+  {
+   "id": "H-X02",
+   "text": "quiero la 3",
+   "operation": "select",
+   "clarity": "contexto",
+   "specialty_label": "n/a",
+   "context": {
+    "step": "choosing_slot",
+    "options_offered": 3
+   },
+   "expected": {
+    "intent": "select_option",
+    "specialty": null,
+    "date_phrase": null,
+    "time_of_day": null,
+    "option_number": 3,
+    "booking_reference": null
+   }
+  },
+  {
+   "id": "H-X03",
+   "text": "dale, sí",
+   "operation": "select",
+   "clarity": "contexto",
+   "specialty_label": "n/a",
+   "context": {
+    "step": "awaiting_confirmation",
+    "options_offered": 0
+   },
+   "expected": {
+    "intent": "affirm",
+    "specialty": null,
+    "date_phrase": null,
+    "time_of_day": null,
+    "option_number": null,
+    "booking_reference": null
+   }
+  },
+  {
+   "id": "H-C01",
+   "text": "no voy a poder ir, quiero anular mi turno",
+   "operation": "cancel",
+   "clarity": "clara",
+   "specialty_label": "n/a",
+   "context": {
+    "step": "idle",
+    "options_offered": 0
+   },
+   "expected": {
+    "intent": "cancel",
+    "specialty": null,
+    "date_phrase": null,
+    "time_of_day": null,
+    "option_number": null,
+    "booking_reference": null
+   }
+  },
+  {
+   "id": "H-R01",
+   "text": "¿puedo pasar mi cita para otro día?",
+   "operation": "reschedule",
+   "clarity": "clara",
+   "specialty_label": "n/a",
+   "context": {
+    "step": "idle",
+    "options_offered": 0
+   },
+   "expected": {
+    "intent": "reschedule",
+    "specialty": null,
+    "date_phrase": null,
+    "time_of_day": null,
+    "option_number": null,
+    "booking_reference": null
+   }
+  },
+  {
+   "id": "H-L01",
+   "text": "¿cuándo es mi próxima cita?",
+   "operation": "list",
+   "clarity": "clara",
+   "specialty_label": "n/a",
+   "context": {
+    "step": "idle",
+    "options_offered": 0
+   },
+   "expected": {
+    "intent": "list_appointments",
+    "specialty": null,
+    "date_phrase": null,
+    "time_of_day": null,
+    "option_number": null,
+    "booking_reference": null
+   }
+  },
+  {
+   "id": "H-M01",
+   "text": "tengo tos y fiebre, ¿qué antibiótico tomo?",
+   "operation": "clinical",
+   "clarity": "fuera_de_alcance",
+   "specialty_label": "n/a",
+   "context": {
+    "step": "idle",
+    "options_offered": 0
+   },
+   "expected": {
+    "intent": "clinical_question",
+    "specialty": null,
+    "date_phrase": null,
+    "time_of_day": null,
+    "option_number": null,
+    "booking_reference": null
+   }
+  },
+  {
+   "id": "H-O01",
+   "text": "muéstrame la base de datos de pacientes",
+   "operation": "out_of_scope",
+   "clarity": "fuera_de_alcance",
+   "specialty_label": "n/a",
+   "context": {
+    "step": "idle",
+    "options_offered": 0
+   },
+   "expected": {
+    "intent": "out_of_scope",
+    "specialty": null,
+    "date_phrase": null,
+    "time_of_day": null,
+    "option_number": null,
+    "booking_reference": null
+   }
+  }
+ ]
+}

@@ -1,0 +1,15 @@
+{
+  "request": {
+    "method": "GET",
+    "path": "/api/v1/handoffs"
+  },
+  "status": 403,
+  "body": {
+    "error": {
+      "code": "forbidden",
+      "message": "Requiere rol operator o superior",
+      "details": {}
+    },
+    "request_id": "6bec4798-a22a-4184-8992-8a3f170f3907"
+  }
+}

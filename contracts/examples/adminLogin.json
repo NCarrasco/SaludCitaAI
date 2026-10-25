@@ -1,0 +1,21 @@
+{
+  "request": {
+    "method": "POST",
+    "path": "/api/v1/auth/login",
+    "body": {
+      "email": "panel@saludcita.test",
+      "password": "<SEED_ADMIN_PASSWORD>"
+    }
+  },
+  "status": 200,
+  "body": {
+    "user": {
+      "id": "881311b9-a7a2-4db6-b383-a80c6661197d",
+      "email": "panel@saludcita.test",
+      "display_name": "Panel de estadísticas (demo)",
+      "role": "viewer"
+    },
+    "csrf_token": "<csrf_…: también en la cookie legible sc_csrf>",
+    "expires_at": "2026-10-24T03:14:58-04:00"
+  }
+}

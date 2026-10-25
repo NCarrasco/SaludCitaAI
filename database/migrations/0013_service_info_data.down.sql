@@ -1,0 +1,3 @@
+ALTER TABLE doctor_services DROP COLUMN IF EXISTS price_dop;
+ALTER TABLE centers DROP COLUMN IF EXISTS payment_methods, DROP COLUMN IF EXISTS accepted_insurers,
+  DROP COLUMN IF EXISTS info_notes, DROP COLUMN IF EXISTS email, DROP COLUMN IF EXISTS phone;

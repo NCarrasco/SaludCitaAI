@@ -1,0 +1,55 @@
+{
+  "request": {
+    "method": "GET",
+    "path": "/api/v1/stats/summary?from=2026-10-16&to=2026-11-16&specialty_id=20000000-0000-4000-8000-000000000002"
+  },
+  "status": 200,
+  "body": {
+    "filters": {
+      "from": "2026-10-16",
+      "to": "2026-11-16",
+      "center_id": null,
+      "doctor_id": null,
+      "specialty_id": "20000000-0000-4000-8000-000000000002"
+    },
+    "timezone": "America/Santo_Domingo",
+    "generated_at": "2026-10-23T19:14:58-04:00",
+    "definitions": {
+      "periodo": "Intervalo [from, to) de fechas locales en la zona de negocio; to se excluye.",
+      "searches": "Eventos analytics_events.availability_search deduplicados (misma búsqueda del mismo paciente en 5 min = 1), por fecha de la búsqueda, terminen o no en reserva.",
+      "operations": "Eventos appointment_events confirmados (booked, cancelled, rescheduled, advanced) por fecha de la operación. No son mensajes ni ejecuciones de n8n.",
+      "agenda_by_status": "Citas cuyo slot actual empieza en el periodo, por estado actual (cohorte por fecha de cita, distinta de la de operaciones).",
+      "occupancy": "occupied/enabled: slots abiertos del periodo con cita booked/completed/no_show sobre slots abiertos del periodo. Los slots retenidos por una oferta (held_by_offer) y los bloqueados se informan aparte y no cuentan como ocupados.",
+      "attendance": "Sobre citas ya iniciadas del periodo: completed y no_show los marca el personal; unmarked = siguen en booked. rate = completed/(completed+no_show). Una reserva no acredita asistencia.",
+      "filters": "center_id, doctor_id y specialty_id filtran por el servicio del slot asociado. Las búsquedas solo se atribuyen a un filtro si se hicieron por servicio o por esa especialidad."
+    },
+    "data": {
+      "searches": 18,
+      "operations": {
+        "bookings": 3,
+        "cancellations": 1,
+        "reschedules": 0,
+        "advances": 0
+      },
+      "agenda_by_status": {
+        "booked": 2,
+        "cancelled": 1,
+        "completed": 0,
+        "no_show": 0
+      },
+      "occupancy": {
+        "occupied": 2,
+        "enabled": 164,
+        "rate": 0.0122,
+        "held_by_offer": 0,
+        "blocked": 0
+      },
+      "attendance": {
+        "completed": 0,
+        "no_show": 0,
+        "unmarked": 0,
+        "rate": null
+      }
+    }
+  }
+}

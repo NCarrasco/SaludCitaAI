@@ -1,0 +1,80 @@
+{
+  "id": "scScheduler01",
+  "name": "SaludCita · Planificador (cada minuto)",
+  "active": false,
+  "nodes": [
+    {
+      "id": "sch-trigger",
+      "name": "Cada minuto",
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.2,
+      "position": [
+        0,
+        0
+      ],
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "field": "minutes",
+              "minutesInterval": 1
+            }
+          ]
+        }
+      }
+    },
+    {
+      "id": "sch-tick",
+      "name": "Ejecutar planificador",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.5,
+      "position": [
+        260,
+        0
+      ],
+      "parameters": {
+        "method": "POST",
+        "url": "http://api:8080/api/v1/internal/scheduler/tick",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify({}) }}",
+        "options": {
+          "timeout": 60000
+        }
+      },
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "scApiServiceCred01",
+          "name": "SaludCita API (servicio n8n)"
+        }
+      }
+    }
+  ],
+  "connections": {
+    "Cada minuto": {
+      "main": [
+        [
+          {
+            "node": "Ejecutar planificador",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1",
+    "timezone": "America/Santo_Domingo",
+    "saveDataSuccessExecution": "all",
+    "saveDataErrorExecution": "all"
+  },
+  "pinData": {},
+  "tags": [],
+  "meta": {
+    "saludcita": "Vence ofertas y emite las siguientes, publica recordatorios, recupera leases y amplía la agenda. Sin secretos.",
+    "saludcita_publish": true
+  }
+}

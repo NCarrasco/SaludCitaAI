@@ -1,0 +1,7 @@
+extends:
+  - recommended
+rules:
+  # localhost es el servidor correcto para la entrega local
+  no-server-example.com: off
+  operation-4xx-response: error
+  info-license: off

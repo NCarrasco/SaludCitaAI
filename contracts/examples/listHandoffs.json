@@ -1,0 +1,47 @@
+{
+  "request": {
+    "method": "GET",
+    "path": "/api/v1/handoffs?limit=5"
+  },
+  "status": 200,
+  "body": {
+    "items": [
+      {
+        "id": "04c5d541-93d4-42e7-b06a-029a94f3d6d4",
+        "reference": "AY-HWXKV4",
+        "status": "open",
+        "reason": "Solicitado por el paciente desde el menú",
+        "patient": {
+          "id": "60000000-0000-4000-8000-000000000007",
+          "full_name": "Marta Ejemplo Herrera"
+        },
+        "created_at": "2026-10-23T19:12:06-04:00",
+        "resolved_at": null
+      },
+      {
+        "id": "be18d4cb-8347-4784-ba24-a12b5d7f812b",
+        "reference": "AY-W85UZF",
+        "status": "open",
+        "reason": "Solicitado por el paciente en la conversación",
+        "patient": {
+          "id": "60000000-0000-4000-8000-000000000019",
+          "full_name": "Gabriela Simulada Peralta"
+        },
+        "created_at": "2026-10-23T18:59:28-04:00",
+        "resolved_at": null
+      },
+      {
+        "id": "3996f1a0-f7dd-4544-a20e-6236c8be258e",
+        "reference": "AY-RJPA3K",
+        "status": "open",
+        "reason": "Solicitado por el paciente en la conversación",
+        "patient": {
+          "id": "60000000-0000-4000-8000-000000000019",
+          "full_name": "Gabriela Simulada Peralta"
+        },
+        "created_at": "2026-10-23T18:56:14-04:00",
+        "resolved_at": null
+      }
+    ]
+  }
+}

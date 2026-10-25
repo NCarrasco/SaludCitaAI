@@ -1,0 +1,52 @@
+{
+  "request": {
+    "method": "GET",
+    "path": "/api/v1/stats/offers?from=2026-10-16&to=2026-11-16"
+  },
+  "status": 200,
+  "body": {
+    "filters": {
+      "from": "2026-10-16",
+      "to": "2026-11-16",
+      "center_id": null,
+      "doctor_id": null,
+      "specialty_id": null
+    },
+    "timezone": "America/Santo_Domingo",
+    "generated_at": "2026-10-23T19:14:58-04:00",
+    "definitions": {
+      "periodo": "Intervalo [from, to) de fechas locales en la zona de negocio; to se excluye.",
+      "offers": "advance_offers por fecha de envío y estado. acceptance_rate = accepted/(accepted+rejected+expired).",
+      "advance_minutes": "Por cada evento advanced del periodo: inicio anterior − inicio nuevo, en minutos. Media, mediana y n.",
+      "recovery": "freed_eligible_slots: slots distintos liberados (cancelación, reprogramación o adelanto) antes de su inicio en el periodo. recovered_slots: de ellos, los que volvieron a ocuparse antes de su inicio. Medido hasta generated_at: slots futuros aún pueden recuperarse.",
+      "filters": "center_id, doctor_id y specialty_id filtran por el servicio del slot asociado. Las búsquedas solo se atribuyen a un filtro si se hicieron por servicio o por esa especialidad."
+    },
+    "data": {
+      "offers_by_status": {
+        "pending": 0,
+        "accepted": 0,
+        "rejected": 0,
+        "expired": 0,
+        "invalidated": 0,
+        "delivery_failed": 0
+      },
+      "acceptance_rate": null,
+      "rounds_by_status": {
+        "open": 0,
+        "completed": 0,
+        "exhausted": 0,
+        "closed": 0
+      },
+      "advance_minutes": {
+        "n": 0,
+        "mean": null,
+        "median": null
+      },
+      "recovery": {
+        "recovered_slots": 2,
+        "freed_eligible_slots": 3,
+        "rate": 0.6667
+      }
+    }
+  }
+}

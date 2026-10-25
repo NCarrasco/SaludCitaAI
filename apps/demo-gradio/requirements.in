@@ -1,0 +1,3 @@
+# Dependencias directas de la interfaz Gradio
+gradio==6.30.0
+httpx==0.28.1

@@ -1,0 +1,541 @@
+/* SaludCita · ventana de mensajería tipo WhatsApp sobre Gradio 6.
+   Tokens semánticos por tema; animaciones solo con transform/opacity; prefers-reduced-motion respetado. */
+
+:root {
+  /* Paleta violeta compartida con el panel (apps/admin-panel/src/styles.css). Verde solo para estados «confirmado». */
+  --wa-head: #5b34d6; --wa-head-text: #ffffff; --wa-head-muted: rgba(255,255,255,.85);
+  --wa-bg: #f0edf8; --wa-in: #ffffff; --wa-out: #ebe4fe; --wa-text: #17132b; --wa-muted: #5f5975;
+  --wa-bar: #f3f1f9; --wa-ref-bg: #e3dafd; --wa-ref-text: #3f1fae; --wa-accent: #7c5cfa; --wa-accent-strong: #5b34d6; --wa-quote: #9b80ff; --wa-border: #dcd6ec;
+  --wa-chip-text: #4a25c4; --wa-shadow: 0 1px .5px rgba(40,24,110,.13); --wa-pattern: #ddd6ef;
+  --wa-focus: #5b34d6; --wa-focus-on-head: #ffffff;
+  --ease-out: cubic-bezier(0.23, 1, 0.32, 1);
+  --sc-font: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+}
+/* Siempre claro (wa.js quita la clase .dark): también el fondo de la página, que Gradio oscurece por la preferencia del sistema */
+html, body { background: var(--wa-bg) !important; color-scheme: light; }
+.dark {
+  --wa-head: #1e1844; --wa-head-text: #ece9f7; --wa-head-muted: #b8b1d4;
+  --wa-bg: #110e22; --wa-in: #221d3d; --wa-out: #3b2b86; --wa-text: #ece9f7; --wa-muted: #a7a1bf;
+  --wa-bar: #221d3d; --wa-ref-bg: rgba(155,128,255,.22); --wa-ref-text: #cdbfff; --wa-accent: #9b80ff; --wa-accent-strong: #6d4ae8; --wa-quote: #9b80ff; --wa-border: #2d2849;
+  --wa-chip-text: #cdbfff; --wa-pattern: #1d1836;
+  --wa-focus: #b8a6ff; --wa-focus-on-head: #b8a6ff;
+}
+
+/* ---------- Ventana ---------- */
+.gradio-container { font-family: var(--sc-font) !important; }
+.sc-wa { max-width: 780px; margin: 12px auto 0 !important; border-radius: 22px; overflow: hidden; gap: 0 !important; padding: 0 !important;
+  background: var(--wa-bg); box-shadow: 0 10px 30px rgba(17,27,33,.18); border: 1px solid rgba(0,0,0,.06); font-family: var(--sc-font); }
+.sc-wa > .block, .sc-wa .html-container:has(.sc-wa-head) { padding: 0 !important; }
+.sc-wa > .block, .sc-wa .sc-wa-chat, .sc-wa .sc-wa-actions { background: transparent !important; border: none !important; box-shadow: none !important; }
+
+/* ---------- Cabecera ---------- */
+.sc-wa-head { display: flex; align-items: center; gap: 12px; background: var(--wa-head); color: var(--wa-head-text); padding: 10px 10px 2px 16px; }
+.sc-wa-avatar { width: 44px; height: 44px; flex: none; } .sc-wa-avatar svg { width: 44px; height: 44px; display: block; }
+.sc-wa-title { flex: 1; min-width: 0; }
+.sc-wa-name { margin: 0; font-size: 1.06rem; font-weight: 600; color: var(--wa-head-text); line-height: 1.3; }
+.sc-wa-iconbtn { width: 44px; height: 44px; border-radius: 50%; border: none; background: transparent; cursor: pointer;
+  display: grid; place-items: center; color: var(--wa-head-text); transition: background-color 160ms ease, transform 160ms var(--ease-out); }
+.sc-wa-iconbtn:active { transform: scale(.94); }
+@media (hover: hover) and (pointer: fine) { .sc-wa-iconbtn:hover { background: rgba(255,255,255,.12); } }
+.sc-wa-iconbtn:focus-visible { outline: 3px solid var(--wa-focus-on-head); outline-offset: -3px; }
+.sc-ico { width: 22px; height: 22px; background: currentColor; -webkit-mask: var(--i) center / contain no-repeat; mask: var(--i) center / contain no-repeat; display: block; }
+.sc-wa-sound[aria-pressed=true] .off, .sc-wa-sound[aria-pressed=false] .on { display: none; }
+.sr { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
+
+.sc-wa-meta { background: var(--wa-head); padding: 0 16px 6px 72px !important; gap: 8px !important; margin: 0 !important; }
+.sc-wa-meta > div { background: transparent !important; border: none !important; padding: 0 !important; }
+.sc-wa-meta .prose, .sc-wa-meta .prose * { color: var(--wa-head-muted) !important; font-size: .8rem !important; margin: 0 !important; }
+
+/* ---------- Menú ⋮ ---------- */
+.sc-wa { position: relative; }
+.sc-wa-kebab { position: absolute !important; top: 52px; right: 12px; z-index: 40; width: min(300px, calc(100% - 24px)) !important;
+  background: var(--wa-in) !important; border-radius: 12px !important; padding: 6px !important; gap: 2px !important;
+  box-shadow: 0 8px 28px rgba(11,20,26,.26) !important; border: 1px solid var(--wa-border) !important;
+  transform-origin: top right; opacity: 0; transform: scale(.95); pointer-events: none; visibility: hidden;
+  transition: opacity 160ms var(--ease-out), transform 160ms var(--ease-out), visibility 0s linear 160ms; }
+.sc-wa.kebab-open .sc-wa-kebab { opacity: 1; transform: none; pointer-events: auto; visibility: visible;
+  transition: opacity 180ms var(--ease-out), transform 180ms var(--ease-out); }
+.sc-wa-kebab button { justify-content: flex-start !important; text-align: left !important; background: transparent !important;
+  border: none !important; box-shadow: none !important; color: var(--wa-text) !important; font-weight: 400 !important;
+  min-height: 44px; border-radius: 8px !important; padding: 0 12px !important; }
+@media (hover: hover) and (pointer: fine) { .sc-wa-kebab button:hover { background: var(--wa-bar) !important; } }
+.sc-wa-kebab .sc-danger { color: #d93025 !important; }
+.dark .sc-wa-kebab .sc-danger { color: #f28b82 !important; }
+.sc-wa-kebab .block, .sc-wa-kebab .form { background: transparent !important; border: none !important; box-shadow: none !important; }
+.sc-wa-kebab hr, .sc-wa-kebab .sc-sep { border: none; border-top: 1px solid var(--wa-border); margin: 4px 0; }
+
+/* ---------- Pestañas en la barra verde ---------- */
+.sc-wa-tabs { background: transparent !important; border: none !important; padding: 0 !important; gap: 0 !important; }
+.sc-wa-tabs [role=tablist], .sc-wa-tabs .tab-wrapper, .sc-wa-tabs .tab-container { background: var(--wa-head) !important; border: none !important; margin: 0 !important; }
+.sc-wa-tabs .tab-container { display: flex !important; justify-content: space-around !important; padding: 0 8px !important; }
+.sc-wa-tabs [role=tab] { flex: none !important; color: var(--wa-head-muted) !important; font-weight: 600 !important; text-transform: uppercase;
+  letter-spacing: .03em; font-size: .85rem !important; padding: 12px 8px !important; min-height: 44px; border: none !important;
+  border-bottom: 3px solid transparent !important; background: transparent !important; transition: color 160ms ease, border-color 160ms ease; }
+.sc-wa-tabs [role=tab][aria-selected=true] { color: var(--wa-head-text) !important; border-bottom-color: var(--wa-head-text) !important; }
+.dark .sc-wa-tabs [role=tab][aria-selected=true] { color: var(--wa-accent) !important; border-bottom-color: var(--wa-accent) !important; }
+.sc-wa-tabs [role=tab]::after, .sc-wa-tabs [role=tab]::before { display: none !important; }
+/* Sin la línea separadora gris que Gradio dibuja bajo la barra de pestañas */
+.sc-wa-tabs .tab-container::after, .sc-wa-tabs .tab-container::before { display: none !important; }
+.sc-wa-tabs [role=tab]:focus-visible { outline: 3px solid var(--wa-focus); outline-offset: -3px; }
+.sc-wa-tabs [role=tabpanel], .sc-wa-tabs .tabitem { background: transparent !important; border: none !important; padding: 0 !important; }
+.sc-wa-chat-tab { background-image: var(--wa-pattern-img); background-repeat: repeat; }
+.sc-wa-panel > .column { background: transparent; margin: 0; padding: 12px !important; gap: 8px !important; color: var(--wa-text); min-height: 420px; }
+.sc-wa-panel .block, .sc-wa-panel .html-container { background: transparent !important; border: none !important; box-shadow: none !important; padding: 0 !important; }
+
+/* Indicador «escribiendo…» (único bucle animado: indica trabajo en curso) */
+.sc-typing { display: inline-flex; gap: 4px; align-items: center; height: 18px; padding: 0 2px; }
+.sc-typing i { width: 7px; height: 7px; border-radius: 50%; background: var(--wa-muted); opacity: .45; animation: sc-dot 1.1s infinite ease-in-out; }
+.sc-typing i:nth-child(2) { animation-delay: .15s; } .sc-typing i:nth-child(3) { animation-delay: .3s; }
+@keyframes sc-dot { 0%, 60%, 100% { transform: translateY(0); opacity: .45; } 30% { transform: translateY(-4px); opacity: 1; } }
+@keyframes sc-in { from { opacity: 0; transform: translateY(8px) scale(.98); } to { opacity: 1; transform: none; } }
+
+/* ---------- Respuestas rápidas y tarjeta de confirmación ---------- */
+.sc-wa-actions { padding: 0 12px 4px !important; gap: 6px !important; }
+.sc-wa-actions .sc-status:has(.prose:empty) { display: none !important; }
+.sc-status .prose { color: var(--wa-text) !important; background: var(--wa-in); border-radius: 8px; padding: 4px 10px !important; display: inline-block; font-size: .9rem; }
+.sc-choice { gap: 6px !important; }
+.sc-choice button { text-align: left !important; justify-content: flex-start !important; white-space: normal !important; min-height: 44px;
+  background: var(--wa-in) !important; color: var(--wa-chip-text) !important; border: 1px solid var(--wa-border) !important;
+  border-radius: 12px !important; box-shadow: var(--wa-shadow) !important; font-weight: 500 !important;
+  transition: transform 160ms var(--ease-out), background-color 160ms ease; animation: sc-in 220ms var(--ease-out) both; }
+.sc-choice button:nth-child(2) { animation-delay: 40ms; } .sc-choice button:nth-child(3) { animation-delay: 80ms; } .sc-choice button:nth-child(4) { animation-delay: 120ms; }
+.sc-choice button:active, .sc-menu button:active, .sc-wa-send:active, .sc-card-actions button:active { transform: scale(.97); }
+
+.sc-wa-card { background: var(--wa-in) !important; border-radius: 14px !important; border: none !important; overflow: hidden;
+  box-shadow: 0 2px 8px rgba(11,20,26,.14) !important; padding: 0 !important; gap: 0 !important; animation: sc-in 240ms var(--ease-out) both; }
+.sc-wa-card > div, .sc-wa-card .block, .sc-wa-card .form { background: transparent !important; border: none !important; box-shadow: none !important; }
+.sc-card { padding: 14px 16px 8px; color: var(--wa-text); }
+.sc-card-title { font-weight: 600; font-size: 1.02rem; margin: 0 0 10px; display: flex; align-items: center; gap: 8px; color: var(--wa-text); }
+.sc-card-title .sc-ico { color: var(--wa-accent-strong); }
+.sc-card-row { display: flex; gap: 10px; align-items: flex-start; padding: 6px 0; border-top: 1px solid var(--wa-border); }
+.sc-card-row .sc-ico { width: 18px; height: 18px; margin-top: 2px; flex: none; color: var(--wa-muted); }
+.sc-card-row b { display: block; font-size: .78rem; color: var(--wa-muted); font-weight: 500; text-transform: uppercase; letter-spacing: .03em; }
+.sc-card-note { font-size: .82rem; color: var(--wa-muted); margin: 8px 0 0; }
+.sc-card-fields { padding: 0 16px !important; gap: 10px !important; }
+.sc-card-fields label span, .sc-card-fields .label-wrap span { color: var(--wa-muted) !important; background: transparent !important; font-weight: 500 !important; }
+.sc-card-fields input { min-height: 44px; font-size: 1rem !important; }
+/* Fecha de nacimiento: Día / Mes / Año */
+#sc-birth .sc-dob-src { position: absolute !important; width: 1px !important; height: 1px !important; opacity: 0; pointer-events: none; }
+.sc-dob { flex: 1 1 100%; width: 100%; display: grid; grid-template-columns: 1fr 2fr 1.4fr; gap: 8px; margin-top: 6px; }
+.sc-dob select { min-height: 44px; width: 100%; padding: 0 30px 0 12px; font: inherit; font-size: 1rem; color: var(--wa-text);
+  background: var(--wa-in) url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8'%3E%3Cpath d='M1 1l5 5 5-5' fill='none' stroke='%23667781' stroke-width='1.6' stroke-linecap='round'/%3E%3C/svg%3E") no-repeat right 12px center;
+  border: 1px solid var(--wa-border); border-radius: 10px; appearance: none; -webkit-appearance: none; cursor: pointer;
+  transition: border-color 150ms ease, box-shadow 150ms ease; }
+.sc-dob select:hover { border-color: var(--wa-accent-strong); }
+.sc-dob select:focus-visible { outline: none; border-color: var(--wa-accent-strong); box-shadow: 0 0 0 3px color-mix(in srgb, var(--wa-accent-strong) 25%, transparent); }
+.sc-dob select:invalid, .sc-dob select:has(option[value=""]:checked) { color: var(--wa-muted); }
+.sc-dob-error select { border-color: #c5221f; }
+.sc-card-switch { padding: 4px 16px !important; }
+.sc-card-switch input[type=checkbox] { appearance: none; -webkit-appearance: none; width: 40px !important; height: 22px !important; border-radius: 999px !important;
+  background: var(--wa-border) !important; position: relative; cursor: pointer; flex: none; transition: background-color 160ms ease; border: none !important; }
+.sc-card-switch input[type=checkbox]::after { content: ""; position: absolute; top: 3px; left: 3px; width: 16px; height: 16px; border-radius: 50%;
+  background: #fff; box-shadow: 0 1px 2px rgba(0,0,0,.3); transition: transform 180ms var(--ease-out); }
+.sc-card-switch input[type=checkbox]:checked { background: var(--wa-accent) !important; }
+.sc-card-switch input[type=checkbox]:checked::after { transform: translateX(18px); }
+.sc-card-switch input[type=checkbox]:focus-visible { outline: 3px solid var(--wa-focus); outline-offset: 2px; }
+.sc-card-actions { padding: 10px 16px 14px !important; gap: 8px !important; flex-direction: column !important; }
+.sc-card-actions button { width: 100% !important; min-height: 46px; border-radius: 999px !important; font-weight: 600 !important; transition: transform 160ms var(--ease-out); }
+.sc-card-actions .sc-primary { background: var(--wa-accent-strong) !important; color: #fff !important; border: none !important; }
+.sc-card-actions .sc-secondary { background: transparent !important; color: var(--wa-accent-strong) !important; border: none !important; box-shadow: none !important; }
+
+/* ---------- Menú guiado, cita en curso y barra de escritura ---------- */
+.sc-menu { flex-wrap: nowrap !important; overflow-x: auto; gap: 6px !important; padding: 4px 0 2px; scrollbar-width: none; }
+.sc-menu::-webkit-scrollbar { display: none; }
+.sc-menu button { flex: none !important; min-width: auto !important; min-height: 36px; border-radius: 999px !important; background: var(--wa-in) !important;
+  color: var(--wa-chip-text) !important; border: 1px solid var(--wa-border) !important; padding: 6px 14px !important; white-space: nowrap;
+  font-weight: 500 !important; box-shadow: var(--wa-shadow) !important; transition: transform 160ms var(--ease-out); }
+
+.sc-wa-quote { margin: 0 12px !important; background: var(--wa-in) !important; border-radius: 12px 12px 0 0 !important; padding: 8px 8px 0 !important;
+  align-items: stretch !important; gap: 6px !important; animation: sc-up 200ms var(--ease-out) both; }
+.sc-wa-quote > div { background: transparent !important; border: none !important; box-shadow: none !important; }
+.sc-quote-box { border-left: 4px solid var(--wa-quote); background: var(--wa-bar); border-radius: 6px; padding: 6px 10px; color: var(--wa-muted); font-size: .88rem;
+  max-height: 64px; overflow: hidden; }
+.sc-quote-box b { color: var(--wa-accent-strong); display: block; font-size: .8rem; }
+.sc-quote-close { flex: none !important; width: 44px !important; min-width: 44px !important; height: 44px; background: transparent !important; border: none !important;
+  box-shadow: none !important; color: var(--wa-muted) !important; font-size: 0 !important; position: relative; }
+.sc-quote-close::after { content: ""; position: absolute; inset: 0; margin: auto; width: 18px; height: 18px; background: currentColor;
+  -webkit-mask: var(--i-close) center / contain no-repeat; mask: var(--i-close) center / contain no-repeat; }
+@keyframes sc-up { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: none; } }
+
+.sc-wa-input { background: transparent; padding: 6px 12px 10px !important; align-items: flex-end !important; gap: 8px !important; }
+.sc-wa-text { background: var(--wa-in) !important; border-radius: 24px !important; border: none !important; box-shadow: var(--wa-shadow) !important;
+  padding: 2px 12px !important; min-height: 48px; display: flex; align-items: center; }
+.sc-wa-text textarea { background: transparent !important; border: none !important; box-shadow: none !important; font-size: 1rem !important;
+  color: var(--wa-text) !important; line-height: 1.4 !important; }
+.sc-wa-send { width: 48px !important; height: 48px !important; min-width: 48px !important; border-radius: 50% !important; padding: 0 !important;
+  font-size: 0 !important; background: var(--wa-accent-strong) !important; border: none !important; position: relative; flex: none !important;
+  transition: transform 160ms var(--ease-out); }
+.sc-wa-send::after { content: ""; position: absolute; inset: 0; margin: auto; width: 22px; height: 22px; background: #fff;
+  -webkit-mask: var(--i-send) center / contain no-repeat; mask: var(--i-send) center / contain no-repeat; }
+.sc-wa-send:focus-visible { outline: 3px solid var(--wa-focus); outline-offset: 2px; }
+.sc-wa-refresh { margin: 0 12px 4px !important; width: auto !important; background: transparent !important; border: none !important;
+  color: var(--wa-muted) !important; font-size: .8rem !important; box-shadow: none !important; min-height: 32px; }
+.sc-wa-foot { padding: 0 16px 10px !important; text-align: center; } .sc-wa-foot .prose, .sc-wa-foot .prose * { color: var(--wa-muted) !important; }
+.sc-wa-notice:has(.prose:empty) { display: none !important; }
+.sc-hidden { display: none !important; }
+
+/* ---------- Paneles (Mis citas, Avisos) ---------- */
+.sc-wa-panel table { font-size: .9rem; }
+.sc-wa-panel button { min-height: 40px; border-radius: 999px !important; }
+
+/* ---------- Móvil ---------- */
+@media (max-width: 640px) {
+  .sc-wa { border-radius: 0; margin: 0 -12px !important; box-shadow: none; }
+  .sc-wa-head { padding: 8px 4px 2px 12px; } .sc-wa-avatar, .sc-wa-avatar svg { width: 38px; height: 38px; }
+  .sc-wa-name { font-size: 1rem; }
+  .sc-wa-meta { padding: 0 12px 4px 62px !important; }
+  .sc-wa-tabs .tab-container { padding: 0 !important; flex-wrap: nowrap !important; }
+  .sc-wa-tabs [role=tab] { font-size: .76rem !important; letter-spacing: 0; padding: 10px 4px !important; min-width: 0 !important; }
+  .sc-wa .sc-wa-chat .message-row { max-width: 88% !important; }
+  .sc-wa .sc-wa-chat .avatar-container { display: none !important; }
+}
+
+/* ---------- Movimiento reducido: solo opacidad ---------- */
+@media (prefers-reduced-motion: reduce) {
+  .sc-wa .sc-wa-chat .message-row, .sc-choice button, .sc-wa-card, .sc-wa-quote { animation: sc-fade 150ms ease both !important; }
+  .sc-typing i { animation: sc-fade-dot 1.4s infinite ease-in-out !important; transform: none !important; }
+  .sc-wa-kebab, .sc-wa.kebab-open .sc-wa-kebab { transform: none !important; }
+  .sc-wa *:active { transform: none !important; }
+}
+@keyframes sc-fade { from { opacity: 0; } to { opacity: 1; } }
+@keyframes sc-fade-dot { 0%, 100% { opacity: .35; } 50% { opacity: 1; } }
+
+.sc-wa-head .sc-wa-iconbtn { background: transparent !important; box-shadow: none !important; border: none !important; color: var(--wa-head-text) !important; }
+
+/* Nombre del paciente como píldora flotante sobre la barra verde */
+.sc-wa-meta { padding: 2px 16px 8px 72px !important; align-items: center !important; }
+.sc-wa-meta > div:first-child div.prose { display: inline-flex !important; align-items: center; gap: 6px; padding: 3px 12px 3px 8px !important;
+  border-radius: 999px; background: rgba(255,255,255,.16); box-shadow: 0 1px 2px rgba(0,0,0,.12); backdrop-filter: blur(4px);
+  color: var(--wa-head-text) !important; font-weight: 500 !important; animation: sc-in 220ms var(--ease-out) both; }
+.sc-wa-meta > div:first-child div.prose::before { content: ""; width: 14px; height: 14px; flex: none; background: currentColor;
+  -webkit-mask: var(--i-user) center / contain no-repeat; mask: var(--i-user) center / contain no-repeat; }
+.sc-wa-meta > div:first-child .prose, .sc-wa-meta > div:first-child .prose * { color: var(--wa-head-text) !important; }
+.sc-wa-meta > div:first-child .prose:empty { display: none !important; }
+.dark .sc-wa-meta > div:first-child div.prose { background: rgba(255,255,255,.08); }
+/* Icono de enviar: flecha horizontal centrada (ligeramente desplazada para compensar la punta) */
+.sc-wa-send::after { width: 24px !important; height: 24px !important; transform: translateX(2px); }
+.sc-wa-meta > div:first-child div.prose { max-width: 100%; white-space: nowrap; overflow: hidden; }
+.sc-wa-meta > div:first-child span.prose, .sc-wa-meta > div:first-child span.prose * { display: inline !important; background: none !important;
+  padding: 0 !important; box-shadow: none !important; animation: none !important; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.sc-wa-meta > div:first-child span.prose::before { display: none !important; }
+@media (max-width: 640px) { .sc-wa-meta { padding: 2px 12px 6px 62px !important; } }
+
+
+/* ---------- Mis citas y Avisos: listas de tarjetas ---------- */
+.sc-list { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 8px; }
+.sc-list > li { animation: sc-in 220ms var(--ease-out) both; }
+.sc-list > li:nth-child(2) { animation-delay: 40ms; } .sc-list > li:nth-child(3) { animation-delay: 80ms; } .sc-list > li:nth-child(n+4) { animation-delay: 120ms; }
+.sc-appt { display: flex; gap: 12px; background: var(--wa-in); border-radius: 14px; padding: 12px; box-shadow: var(--wa-shadow); color: var(--wa-text); }
+.sc-appt.sc-off { opacity: .62; }
+.sc-tile { width: 52px; height: 56px; flex: none; border-radius: 12px; background: var(--wa-out); color: var(--wa-accent-strong);
+  display: flex; flex-direction: column; align-items: center; justify-content: center; line-height: 1.05; }
+.dark .sc-tile { color: #e9edef; }
+.sc-tile b { font-size: 1.35rem; font-weight: 700; } .sc-tile span { font-size: .72rem; text-transform: uppercase; letter-spacing: .06em; font-weight: 600; }
+.sc-appt.sc-off .sc-tile { background: var(--wa-bar); color: var(--wa-muted); }
+.sc-appt-body { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 3px; }
+.sc-appt-top { display: flex; justify-content: space-between; align-items: center; gap: 8px; }
+.sc-appt-top b { font-size: 1rem; }
+.sc-appt-line { display: flex; gap: 6px; align-items: center; color: var(--wa-muted); font-size: .9rem; }
+.sc-appt-line .sc-ico { width: 15px; height: 15px; flex: none; }
+.sc-appt-ref { font-size: .8rem; color: var(--wa-muted); margin-top: 2px; }
+.sc-appt-ref code { font-family: ui-monospace, SFMono-Regular, Menlo, monospace; background: var(--wa-ref-bg); color: var(--wa-ref-text); font-weight: 600; padding: 1px 6px; border-radius: 6px; letter-spacing: .03em; }
+.sc-pill { font-size: .72rem; font-weight: 600; padding: 2px 9px; border-radius: 999px; white-space: nowrap; }
+.sc-pill-ok { background: #d9fdd3; color: #017561; } .sc-pill-off { background: #fde2e1; color: #b3261e; } .sc-pill-done { background: var(--wa-bar); color: var(--wa-muted); }
+.dark .sc-pill-ok { background: #005c4b; color: #d9fdd3; } .dark .sc-pill-off { background: #5c1f1c; color: #fbd5d2; }
+
+.sc-notif { display: flex; gap: 12px; align-items: flex-start; background: var(--wa-in); border-radius: 14px; padding: 12px; box-shadow: var(--wa-shadow); position: relative; color: var(--wa-text); }
+.sc-notif-ic { width: 40px; height: 40px; flex: none; border-radius: 50%; display: grid; place-items: center; }
+.sc-notif-ic .sc-ico { width: 20px; height: 20px; }
+.sc-tone-ok { background: #d9fdd3; color: #017561; } .sc-tone-off { background: #fde2e1; color: #b3261e; }
+.sc-tone-info { background: #e1f0ff; color: #0b5cad; } .sc-tone-accent { background: #fff3c4; color: #8a5a00; }
+.dark .sc-tone-ok { background: #005c4b; color: #d9fdd3; } .dark .sc-tone-off { background: #5c1f1c; color: #fbd5d2; }
+.dark .sc-tone-info { background: #12324f; color: #b9dcff; } .dark .sc-tone-accent { background: #4a3a00; color: #ffe08a; }
+.sc-notif-body { flex: 1; min-width: 0; }
+.sc-notif-top { display: flex; justify-content: space-between; gap: 8px; align-items: baseline; }
+.sc-notif-top b { font-size: .97rem; } .sc-notif-top time { font-size: .75rem; color: var(--wa-muted); white-space: nowrap; }
+.sc-notif-body p { margin: 2px 0 0 !important; color: var(--wa-muted); font-size: .9rem; line-height: 1.4; }
+.sc-notif.sc-unread .sc-notif-top b { color: var(--wa-text); } .sc-notif.sc-unread .sc-notif-top time { color: var(--wa-accent); font-weight: 600; }
+.sc-dot { position: absolute; right: 12px; bottom: 14px; width: 10px; height: 10px; border-radius: 50%; background: var(--wa-accent); }
+.sc-list-note { font-size: .78rem; color: var(--wa-muted); margin: 10px 4px 0 !important; text-align: center; }
+/* Filtros de la bandeja (Todos · No leídos): píldoras compactas con aire debajo; la lista respira entre avisos */
+html body .gradio-container .sc-wa .sc-chips { display: flex; flex-wrap: wrap; gap: 8px; margin: 2px 0 14px !important; }
+html body .gradio-container .sc-wa .sc-chip { font: 600 .85rem/1 var(--sc-font) !important; padding: 8px 14px !important; min-height: 36px; border-radius: 999px !important;
+  border: 1px solid var(--wa-border) !important; background: var(--wa-in) !important; color: var(--wa-text) !important; box-shadow: none !important; cursor: pointer; }
+html body .gradio-container .sc-wa .sc-chip.on { background: var(--wa-ref-bg) !important; border-color: var(--wa-accent) !important; color: var(--wa-ref-text) !important; }
+html body .gradio-container .sc-wa .sc-chip b { margin-left: 4px; padding: 1px 6px; border-radius: 999px; background: var(--wa-accent); color: #fff; font-size: .72rem; }
+html body .gradio-container .sc-wa .sc-chip-link { border-color: transparent !important; background: transparent !important; color: var(--wa-chip-text) !important; }
+html body .gradio-container .sc-wa .sc-list { gap: 12px; }
+html body .gradio-container .sc-wa .sc-notif { padding: 14px 16px; gap: 14px; }
+html body .gradio-container .sc-wa .sc-notif-body p { margin-top: 6px !important; line-height: 1.5; }
+html body .gradio-container .sc-wa .sc-list-note { margin-top: 18px !important; line-height: 1.5; }
+.sc-empty { text-align: center; color: var(--wa-muted); padding: 48px 16px; }
+.sc-empty .sc-ico { width: 40px; height: 40px; margin: 0 auto 10px; color: var(--wa-accent); }
+.sc-empty p { margin: 2px 0 !important; } .sc-empty b { color: var(--wa-text); }
+.sc-wa-panel .sc-link { background: transparent !important; border: none !important; box-shadow: none !important; color: var(--wa-accent-strong) !important;
+  font-weight: 600 !important; min-height: 40px; }
+.sc-offer { background: var(--wa-in) !important; border-radius: 14px !important; padding: 12px !important; box-shadow: 0 2px 8px rgba(11,20,26,.14) !important;
+  border-left: 4px solid #f5b400 !important; animation: sc-in 240ms var(--ease-out) both; gap: 8px !important; }
+.sc-offer .block { background: transparent !important; }
+.sc-offer .sc-primary { background: var(--wa-accent-strong) !important; color: #fff !important; border: none !important; border-radius: 999px !important; }
+.sc-offer .sc-secondary { background: transparent !important; color: var(--wa-accent-strong) !important; border: none !important; box-shadow: none !important; }
+
+
+/* ---------- Menú ⋮: iconos, separadores y acordeón integrado ---------- */
+.sc-wa-kebab { padding: 8px !important; }
+.sc-kebab-title { margin: 2px 10px 6px !important; font-size: .72rem; font-weight: 700; text-transform: uppercase; letter-spacing: .06em; color: var(--wa-muted); }
+.sc-wa-kebab .sc-mi { position: relative; padding-left: 44px !important; font-size: .94rem !important; }
+.sc-wa-kebab .sc-mi::before { content: ""; position: absolute; left: 14px; top: 50%; width: 18px; height: 18px; margin-top: -9px; background: var(--wa-muted);
+  -webkit-mask: var(--mi) center / contain no-repeat; mask: var(--mi) center / contain no-repeat; }
+.sc-mi-key { --mi: var(--i-key); } .sc-mi-restore { --mi: var(--i-restore); } .sc-mi-devices { --mi: var(--i-devices); } .sc-mi-logout { --mi: var(--i-logout); }
+.sc-wa-kebab .sc-danger::before { background: currentColor !important; }
+.sc-wa-kebab .sc-mi-logout { margin-top: 4px; border-top: 1px solid var(--wa-border) !important; border-radius: 0 0 8px 8px !important; }
+.sc-wa-kebab .sc-mi-acc { border: none !important; background: transparent !important; padding: 0 !important; box-shadow: none !important; }
+.sc-wa-kebab .sc-mi-acc > button, .sc-wa-kebab .sc-mi-acc .label-wrap { position: relative; min-height: 44px; padding: 0 12px 0 44px !important; font-size: .94rem !important;
+  font-weight: 400 !important; color: var(--wa-text) !important; border-radius: 8px !important; display: flex; align-items: center; justify-content: space-between; width: 100%; }
+.sc-wa-kebab .sc-mi-acc > button::before, .sc-wa-kebab .sc-mi-acc .label-wrap::before { content: ""; position: absolute; left: 14px; top: 50%; width: 18px; height: 18px;
+  margin-top: -9px; background: var(--wa-muted); -webkit-mask: var(--i-flask) center / contain no-repeat; mask: var(--i-flask) center / contain no-repeat; }
+.sc-wa-kebab .sc-mi-acc .icon, .sc-wa-kebab .sc-mi-acc [class*=icon] { transform: scale(.7); color: var(--wa-muted) !important; }
+.sc-wa-kebab .sc-mi-acc .label-wrap span { font-size: .94rem !important; font-weight: 400 !important; }
+.sc-wa-kebab .sc-mi-acc > div:not(.label-wrap) { padding: 4px 10px 8px 44px !important; gap: 6px !important; }
+.sc-wa-kebab .sc-mi-acc input { min-height: 38px; font-size: .9rem !important; }
+.sc-wa-kebab .sc-mi-acc .sc-primary { justify-content: center !important; text-align: center !important; background: var(--wa-accent-strong) !important;
+  color: #fff !important; border-radius: 999px !important; min-height: 38px; padding: 0 !important; }
+@media (hover: hover) and (pointer: fine) { .sc-wa-kebab .sc-mi-acc .label-wrap:hover, .sc-wa-kebab .sc-mi-acc > button:hover { background: var(--wa-bar) !important; } }
+
+.sc-status:has(.prose:empty), .sc-status:has(span.md:empty) { display: none !important; }
+.sc-more { margin-top: 10px; } .sc-more > summary { cursor: pointer; color: var(--wa-accent-strong); font-weight: 600; font-size: .9rem;
+  padding: 10px 4px; min-height: 44px; list-style: none; display: flex; align-items: center; gap: 6px; }
+.sc-more > summary::before { content: "›"; display: inline-block; transition: transform 160ms var(--ease-out); font-size: 1.2rem; }
+.sc-more[open] > summary::before { transform: rotate(90deg); }
+.sc-more > summary::-webkit-details-marker { display: none; }
+
+/* Contador de avisos sin leer: insignia en la pestaña (el texto fuente queda oculto) */
+.sc-badge-src { position: absolute !important; width: 1px !important; height: 1px !important; overflow: hidden !important; clip: rect(0 0 0 0); }
+.sc-wa-tabs [role=tab][data-badge] { position: relative; }
+.sc-wa-tabs [role=tab][data-badge]::after { content: attr(data-badge) !important; display: inline-grid !important; place-items: center; min-width: 20px; height: 20px;
+  padding: 0 6px; margin-left: 6px; border-radius: 999px; background: var(--wa-accent-strong); color: #fff; font-size: .72rem; font-weight: 700; letter-spacing: 0;
+  vertical-align: middle; box-shadow: 0 1px 2px rgba(0,0,0,.2); position: static !important; }
+.dark .sc-wa-tabs [role=tab][data-badge]::after { background: #9b80ff; color: #110e22; }
+.sc-wa-tabs [role=tab].sc-pop::after { animation: sc-pop 320ms var(--ease-out); }
+@keyframes sc-pop { 0% { transform: scale(.6); } 60% { transform: scale(1.15); } 100% { transform: scale(1); } }
+@media (prefers-reduced-motion: reduce) { .sc-wa-tabs [role=tab].sc-pop::after { animation: sc-fade 150ms ease; } }
+.sc-wa-head .sc-ico { background: var(--wa-head-text) !important; }
+
+
+/* =====================================================================================================
+   CONVERSACIÓN (#sc-chat). Selectores internos de Gradio 6.30.0 que no tienen alternativa pública:
+     .bubble-wrap · .message-row · .bot-row / .user-row · .message.bot / .message.user · .message-content
+     .avatar-container · .top-panel · .message-buttons
+   Estructura con group_consecutive_messages=False:
+     message-row > flex-wrap > div > div.message.(bot|user) > div.selectable > div.message-content > span.md
+   Protegidos por tests/e2e/specs/estilos-contrato.spec.ts (falla si Gradio cambia la estructura).
+   ===================================================================================================== */
+#sc-chat .bubble-wrap { background: transparent !important; padding: 12px 12px 6px !important; }
+#sc-chat .top-panel, #sc-chat .message-buttons, #sc-chat label[data-testid=block-label] { display: none !important; }
+#sc-chat .message-row { margin: 3px 0 !important; max-width: min(82%, 560px) !important;
+  animation: sc-in 220ms var(--ease-out) both; transform-origin: bottom left; }
+#sc-chat .user-row { transform-origin: bottom right; }
+#sc-chat .message-row .flex-wrap { width: auto !important; max-width: none !important; min-width: 0; flex: 0 1 auto !important; }
+#sc-chat .message.bot, #sc-chat .message.user { border: none !important; color: var(--wa-text) !important; font-size: .97rem; line-height: 1.45;
+  box-shadow: var(--wa-shadow) !important; padding: 6px 10px 7px !important; width: auto !important; max-width: 100% !important; cursor: pointer;
+  transition: filter 160ms ease; }
+#sc-chat .message.bot { background: var(--wa-in) !important; border-radius: 4px 12px 12px 12px !important; }
+#sc-chat .message.user { background: var(--wa-out) !important; border-radius: 12px 4px 12px 12px !important; }
+#sc-chat .message .selectable, #sc-chat .message .message-content, #sc-chat .message .md { background: transparent !important; border: none !important;
+  box-shadow: none !important; padding: 0 !important; margin: 0 !important; width: auto !important; overflow-wrap: break-word; }
+#sc-chat .message p { margin: 0 0 4px !important; } #sc-chat .message p:last-child { margin-bottom: 0 !important; }
+@media (hover: hover) and (pointer: fine) { #sc-chat .message.bot:hover, #sc-chat .message.user:hover { filter: brightness(.97); } }
+#sc-chat .avatar-container { width: 32px !important; height: 32px !important; border: none !important; background: transparent !important; }
+#sc-chat .avatar-container img { width: 32px; height: 32px; padding: 0 !important; }
+/* Horarios numerados: insignia dentro de la burbuja */
+#sc-chat .message ol { list-style: none !important; counter-reset: sc-n; padding: 0 !important; margin: 6px 0 !important; display: flex !important; flex-direction: column; gap: 6px; }
+#sc-chat .message ol > li { counter-increment: sc-n; position: relative; padding: 6px 8px 6px 38px !important; margin: 0 !important;
+  background: var(--wa-bar) !important; border-radius: 10px !important; line-height: 1.35; list-style: none !important; }
+#sc-chat .message ol > li::marker { content: ""; }
+#sc-chat .message ol > li::before { content: counter(sc-n); position: absolute; left: 8px; top: 7px; width: 22px; height: 22px; border-radius: 50%;
+  background: var(--wa-accent-strong); color: #fff; font-size: .78rem; font-weight: 700; display: grid; place-items: center; }
+.dark #sc-chat .message ol > li { background: rgba(255,255,255,.06) !important; }
+#sc-chat .message ul { padding-left: 1.2em !important; margin: 4px 0 !important; }
+/* Cita (responder) y código */
+#sc-chat .message blockquote { margin: 0 0 6px !important; padding: 4px 8px !important; border-left: 4px solid var(--wa-quote) !important;
+  background: rgba(0,0,0,.05) !important; border-radius: 6px; color: var(--wa-muted) !important; font-size: .88rem; }
+.dark #sc-chat .message blockquote { background: rgba(255,255,255,.06) !important; }
+#sc-chat .message blockquote strong { color: var(--wa-accent-strong) !important; display: block; font-size: .82rem; }
+#sc-chat .message code { font-family: ui-monospace, SFMono-Regular, Menlo, monospace; font-size: .95em; letter-spacing: .02em;
+  background: var(--wa-ref-bg) !important; color: var(--wa-ref-text) !important; font-weight: 600; padding: 1px 7px !important; border-radius: 6px; letter-spacing: .03em;
+  user-select: all; white-space: nowrap; }
+/* «Escribiendo…»: único bucle animado; existe solo mientras hay una petición en curso */
+#sc-chat .sc-typing { display: inline-flex !important; gap: 4px; align-items: center; padding: 6px 4px !important; }
+#sc-chat .sc-typing i { background: var(--wa-muted) !important; width: 7px !important; height: 7px !important; border-radius: 50% !important;
+  display: inline-block !important; padding: 0 !important; animation: sc-dot 1.1s infinite ease-in-out; }
+@media (max-width: 640px) { #sc-chat .message-row { max-width: 90% !important; } #sc-chat .avatar-container { display: none !important; } }
+@media (prefers-reduced-motion: reduce) { #sc-chat .message-row { animation: sc-fade 150ms ease both !important; transform: none !important; }
+  #sc-chat .sc-typing i { animation: sc-fade-dot 1.4s infinite ease-in-out !important; } }
+
+/* =====================================================================================================
+   CAMPO DE TEXTO (#sc-input). Mientras se espera la respuesta, Gradio pinta su indicador de progreso
+   (.wrap.generating, interno) como un marco cuadrado de 2 px. No se oculta: se le da el mismo radio que al
+   campo para que el contorno verde quede completo y redondeado. Solo afecta a este componente.
+   ===================================================================================================== */
+#sc-input { border-radius: 24px !important; transition: box-shadow 160ms ease; }
+#sc-input > .wrap { border-radius: 24px !important; inset: 0 !important; }
+#sc-input > .wrap.generating { border: 2px solid var(--wa-accent) !important; background: transparent !important; }
+#sc-input:focus-within { box-shadow: 0 0 0 2px var(--wa-accent), var(--wa-shadow) !important; }
+
+/* Preferencia «Sonido al teclear» en el menú ⋮ (interruptor accesible, aria-pressed) */
+.sc-kebab-toggle { width: 100%; min-height: 44px; display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 0 12px 0 14px;
+  border: none; background: transparent; color: var(--wa-text); font: inherit; font-size: .94rem; border-radius: 8px; cursor: pointer; }
+@media (hover: hover) and (pointer: fine) { .sc-kebab-toggle:hover { background: var(--wa-bar); } }
+.sc-kebab-toggle:focus-visible { outline: 3px solid var(--wa-focus-on-head); outline-offset: -3px; }
+.sc-switch { width: 36px; height: 20px; border-radius: 999px; background: var(--wa-border); position: relative; flex: none; transition: background-color 160ms ease; }
+.sc-switch::after { content: ""; position: absolute; top: 2px; left: 2px; width: 16px; height: 16px; border-radius: 50%; background: #fff;
+  box-shadow: 0 1px 2px rgba(0,0,0,.3); transition: transform 180ms var(--ease-out); }
+.sc-kebab-toggle[aria-pressed=true] .sc-switch { background: var(--wa-accent); }
+.sc-kebab-toggle[aria-pressed=true] .sc-switch::after { transform: translateX(16px); }
+
+/* ---------- Contraste WCAG AA (verificado con axe en tests/e2e/specs/estilos-contrato.spec.ts) ---------- */
+:root { --wa-head: #5230c9; --wa-head-muted: rgba(255,255,255,.88); --wa-muted-bg: #4d5d66; }
+.dark { --wa-muted-bg: #aebac1; }
+.sc-wa-meta > div:first-child div.prose { background: rgba(0,0,0,.22) !important; }
+#sc-chat .message.user blockquote strong { color: #3f1fae !important; }
+.dark #sc-chat .message.user blockquote strong { color: #e3dafd !important; }
+.sc-wa-refresh, .sc-wa-foot .prose, .sc-wa-foot .prose *, .sc-list-note, .sc-empty { color: var(--wa-muted-bg) !important; }
+#sc-chat .bubble-wrap:focus-visible { outline: 3px solid var(--wa-focus); outline-offset: -3px; }
+#sc-chat .message blockquote, #sc-chat .message blockquote * { opacity: 1 !important; }
+#sc-chat .message.user blockquote strong { color: #351a99 !important; }
+#sc-chat .message.user blockquote { color: #3f3a55 !important; }
+
+/* Comprobante PDF en la tarjeta de la cita */
+.sc-receipt { display: inline-flex; align-items: center; gap: 6px; margin-top: 6px; min-height: 36px; padding: 0 12px; border-radius: 999px;
+  font: inherit; font-size: .85rem; font-weight: 600; text-decoration: none; border: 1px solid var(--wa-border); background: var(--wa-in);
+  color: var(--wa-accent-strong) !important; cursor: pointer; width: fit-content; }
+.sc-receipt .sc-ico { width: 16px; height: 16px; }
+.sc-receipt-pending { color: var(--wa-muted) !important; cursor: default; border-style: dashed; }
+.sc-receipt-retry { color: #b3261e !important; } .dark .sc-receipt-retry { color: #fbd5d2 !important; }
+.sc-receipt:focus-visible { outline: 3px solid var(--wa-focus); outline-offset: 2px; }
+/* Puente interno Avisos/Mis citas → Gradio: presente en el DOM (wa.js lo usa) pero nunca visible ni enfocable */
+.sc-bridge, #sc-bridge, #sc-bridge-btn { position: absolute !important; width: 1px !important; height: 1px !important; overflow: hidden !important;
+  clip: rect(0 0 0 0) !important; opacity: 0 !important; pointer-events: none !important; margin: 0 !important; padding: 0 !important; border: 0 !important; }
+/* Comprobante PDF entregado en el chat (documento al estilo de WhatsApp) */
+#sc-chat .message a.sc-doc { display: flex; align-items: center; gap: 12px; min-width: 240px; padding: 10px 12px; margin: 2px 0;
+  background: var(--wa-bar); border-radius: 10px; color: var(--wa-text) !important; text-decoration: none !important;
+  transition: transform 160ms cubic-bezier(0.23, 1, 0.32, 1), background-color 150ms ease; }
+#sc-chat .message a.sc-doc:hover { background: var(--wa-ref-bg); }
+#sc-chat .message a.sc-doc:active { transform: scale(0.97); }
+#sc-chat .message a.sc-doc:focus-visible { outline: 2px solid var(--wa-accent-strong); outline-offset: 2px; }
+.sc-doc-ico { flex: none; display: grid; place-items: center; width: 38px; height: 46px; border-radius: 6px; background: #c5221f; color: #fff;
+  font: 700 .72rem/1 ui-sans-serif, system-ui, sans-serif; letter-spacing: .04em; }
+.sc-doc-txt { display: flex; flex-direction: column; min-width: 0; }
+.sc-doc-txt b { font-weight: 600; overflow-wrap: anywhere; }
+.sc-doc-txt small { color: var(--wa-muted); font-size: .8rem; margin-top: 2px; }
+.dark #sc-chat .message a.sc-doc { background: rgba(255,255,255,.06); }
+@media (prefers-reduced-motion: reduce) { #sc-chat .message a.sc-doc { transition: none; } #sc-chat .message a.sc-doc:active { transform: none; } }
+/* Lista de citas en el chat: texto normal del mensaje (sin barra ni fondo, que lo confundirían con una respuesta citada) */
+#sc-chat .message .sc-li { display: flex; flex-direction: column; align-items: flex-start; gap: 2px; margin: 10px 0 0; }
+#sc-chat .message .sc-li + .sc-li { padding-top: 10px; border-top: 1px solid var(--wa-border); }
+#sc-chat .message .sc-li code { margin-bottom: 2px; }
+#sc-chat .message .sc-li-line { display: block; line-height: 1.4; }
+#sc-chat .message .sc-li-line + .sc-li-line { color: var(--wa-muted); font-size: .92em; }
+
+/* ---------- Tarjeta de horario de consulta (respuesta «horarios») ---------- */
+.sc-sched { display: grid; gap: 10px; min-width: min(420px, 100%); }
+.sc-sched-head { display: flex; align-items: center; gap: 10px; }
+.sc-sched-head > div { display: grid; line-height: 1.3; }
+.sc-sched-head strong { font-size: 1rem; color: var(--wa-text); }
+.sc-sched-head span { font-size: .8rem; color: var(--wa-muted); }
+.sc-sched-ico { --i: var(--i-cal); width: 34px; height: 34px; flex: none; border-radius: 10px; background: var(--wa-ref-bg);
+  -webkit-mask: none; mask: none; position: relative; }
+.sc-sched-ico::after { content: ""; position: absolute; inset: 7px; background: var(--wa-accent-strong);
+  -webkit-mask: var(--i-cal) center / contain no-repeat; mask: var(--i-cal) center / contain no-repeat; }
+.sc-sched-doc { display: grid; gap: 8px; padding: 10px 12px; border-radius: 12px; background: var(--wa-bar); border: 1px solid var(--wa-border); }
+.sc-sched-who { display: flex; flex-wrap: wrap; align-items: baseline; justify-content: space-between; gap: 2px 10px; }
+.sc-sched-who strong { color: var(--wa-text); font-size: .95rem; }
+.sc-sched-who span { font-size: .78rem; color: var(--wa-chip-text); font-weight: 600; }
+.sc-week { display: flex; gap: 4px; }
+.sc-wd { width: 26px; height: 26px; display: grid; place-items: center; border-radius: 8px; font-size: .72rem; font-weight: 700;
+  color: var(--wa-muted); background: transparent; border: 1px dashed var(--wa-border); }
+.sc-wd.on { background: var(--wa-accent-strong); color: #fff; border: 1px solid var(--wa-accent-strong); }
+.sc-ranges { list-style: none; margin: 0 !important; padding: 0 !important; display: grid; gap: 4px; }
+.sc-ranges li { display: flex; flex-wrap: wrap; justify-content: space-between; gap: 2px 12px; margin: 0 !important; padding: 0 !important;
+  font-size: .88rem; color: var(--wa-text); }
+.sc-ranges li::marker { content: none; }
+.sc-r-days { display: inline-block; color: var(--wa-muted); }
+.sc-r-days::first-letter { text-transform: uppercase; }
+.sc-r-time { font-weight: 600; font-variant-numeric: tabular-nums; }
+.sc-sched-closed { margin: 0 !important; font-size: .85rem; color: var(--wa-text); }
+.sc-sched-note { margin: 0 !important; font-size: .78rem; line-height: 1.45; color: var(--wa-muted); }
+.sc-ranges li { align-items: baseline; }
+.sc-r-times { display: grid; justify-items: end; gap: 2px; }
+.sc-sched-lead { margin: 0 0 10px !important; }
+
+/* ---------- Dentro del asistente flotante (iframe en la página del hospital) ----------
+   Sin tarjeta ni márgenes EXTERIORES: la ventana llena el panel; la conversación conserva su espacio interno
+   y ocupa todo el alto libre. */
+html.sc-embedded { height: auto; min-height: 100%; overflow-x: hidden; overflow-y: auto; background: var(--wa-bg); }
+html.sc-embedded body { height: auto; min-height: 100%; margin: 0; overflow: visible; background: var(--wa-bg); }
+html.sc-embedded .gradio-container { padding: 0 !important; margin: 0 !important; max-width: none !important; width: 100% !important;
+  min-height: 100dvh !important; overflow: visible !important; }
+html.sc-embedded .gradio-container > .main, html.sc-embedded .gradio-container > .main > .contain { padding: 0 !important; margin: 0 !important; max-width: none !important; }
+html.sc-embedded body .gradio-container.gradio-container .contain .sc-wa.sc-wa { max-width: none !important; width: 100% !important; margin: 0 !important; border-radius: 0 !important; box-shadow: none !important;
+  border: 0 !important; min-height: 100dvh; overflow: visible !important; }
+html.sc-embedded #sc-chat { height: calc(100dvh - 350px) !important; min-height: 180px; }
+html.sc-embedded footer { display: none !important; }
+html.sc-embedded .sc-wa-foot { display: none !important; }   /* el aviso legal está en la página que contiene el asistente */
+/* Botón «minimizar»: lo crea wa.js solo dentro del asistente flotante (no hace falta ocultarlo fuera) */
+
+/* Sin indicadores de progreso de Gradio («0.3s», barra) sobre la conversación ni las pestañas: el sondeo de 10 s no debe
+   parecer una recarga. El chat ya muestra su propio «escribiendo…» cuando espera una respuesta. */
+html body .gradio-container.gradio-container .sc-wa .progress-text,
+html body .gradio-container.gradio-container .sc-wa .eta-bar,
+html body .gradio-container.gradio-container .sc-wa .wrap.translucent { display: none !important; }
+html body .gradio-container.gradio-container .sc-wa .pending { opacity: 1 !important; }
+
+/* Dentro del panel: tarjetas de confirmación y listas de opciones más compactas */
+html body.sc-x, html.sc-embedded body .gradio-container.gradio-container .sc-wa .sc-card { padding: 12px 14px !important; gap: 6px !important; }
+html.sc-embedded body .gradio-container.gradio-container .sc-wa .sc-card .sc-primary { min-height: 40px !important; }
+/* La cabecera (nombre, sonido, menú y ⌄ minimizar) queda fija arriba aunque la ventana se desplace */
+html.sc-embedded body .gradio-container.gradio-container .sc-wa .sc-wa-head { position: sticky; top: 0; z-index: 30; }
+
+/* Aviso al recargar tras una actualización del servidor */
+.sc-reload { position: fixed; left: 50%; top: 16px; transform: translateX(-50%); z-index: 100; background: var(--wa-accent-strong); color: #fff;
+  padding: 10px 16px; border-radius: 999px; font-size: .9rem; box-shadow: 0 8px 24px rgba(40, 24, 110, .3); }
+/* Sin los avisos técnicos de Gradio («Could not parse server response…»): el chat informa en español de sus propios
+   errores en la conversación y, si el servidor se reinició, avisa y recarga (wa.js). */
+html body .toast-wrap, html body .gradio-container .toast-wrap, html body [data-testid="toast-body"] { display: none !important; }
+
+/* Bandeja de avisos y citas dentro del panel flotante: texto más pequeño y filtros en una sola línea */
+html.sc-embedded body .gradio-container.gradio-container .sc-wa .sc-chips { gap: 8px !important; flex-wrap: wrap; margin-bottom: 12px !important; }
+html.sc-embedded body .gradio-container.gradio-container .sc-wa .sc-chip { font-size: .8rem !important; padding: 5px 11px !important; min-height: 32px !important; }
+html.sc-embedded body .gradio-container.gradio-container .sc-wa .sc-notif { padding: 12px 14px !important; gap: 12px !important; }
+html.sc-embedded body .gradio-container.gradio-container .sc-wa .sc-notif-ic { width: 34px !important; height: 34px !important; }
+html.sc-embedded body .gradio-container.gradio-container .sc-wa .sc-notif-top b { font-size: .88rem !important; }
+html.sc-embedded body .gradio-container.gradio-container .sc-wa .sc-notif-top time { font-size: .7rem !important; }
+html.sc-embedded body .gradio-container.gradio-container .sc-wa .sc-notif-body p { font-size: .82rem !important; line-height: 1.4 !important; }
+html.sc-embedded body .gradio-container.gradio-container .sc-wa .sc-list-note { font-size: .72rem !important; margin-top: 14px !important; }
+html.sc-embedded body .gradio-container.gradio-container .sc-wa .sc-list > li { font-size: .88rem; }
+/* Mis citas y conversación dentro del panel: mismo tamaño compacto */
+html.sc-embedded body .gradio-container.gradio-container .sc-wa .sc-appt { padding: 10px !important; gap: 10px !important; }
+html.sc-embedded body .gradio-container.gradio-container .sc-wa .sc-tile { width: 44px !important; height: 48px !important; }
+html.sc-embedded body .gradio-container.gradio-container .sc-wa .sc-tile b { font-size: 1.1rem !important; }
+html.sc-embedded body .gradio-container.gradio-container .sc-wa .sc-tile span { font-size: .64rem !important; }
+html.sc-embedded body .gradio-container.gradio-container .sc-wa .sc-appt-top b { font-size: .9rem !important; }
+html.sc-embedded body .gradio-container.gradio-container .sc-wa .sc-appt-line { font-size: .8rem !important; }
+html.sc-embedded body .gradio-container.gradio-container .sc-wa .sc-appt-ref { font-size: .74rem !important; }
+html.sc-embedded body .gradio-container.gradio-container .sc-wa .sc-appt a, html.sc-embedded body .gradio-container.gradio-container .sc-wa .sc-appt button { font-size: .8rem !important; padding: 6px 12px !important; min-height: 34px !important; }
+/* ✕ de los avisos: botón redondo discreto dentro de la tarjeta (área táctil de 36 px) */
+html body .gradio-container.gradio-container .sc-wa .sc-x { flex: none; align-self: flex-start; width: 36px !important; height: 36px !important; min-height: 36px !important;
+  margin: -6px -6px 0 0 !important; padding: 0 !important; display: grid; place-items: center; border: 0 !important; border-radius: 50% !important;
+  background: transparent !important; box-shadow: none !important; color: var(--wa-muted) !important; font-size: 15px; line-height: 1; cursor: pointer; }
+html body .gradio-container.gradio-container .sc-wa .sc-x:hover { background: var(--wa-bar) !important; color: var(--wa-text) !important; }
+html.sc-embedded body .gradio-container.gradio-container .sc-wa .sc-more summary, html.sc-embedded body .gradio-container.gradio-container .sc-wa .sc-more { font-size: .85rem !important; }
+html.sc-embedded body .gradio-container.gradio-container #sc-chat .message.bot, html.sc-embedded body .gradio-container.gradio-container #sc-chat .message.user { font-size: .9rem !important; }
+html.sc-embedded body .gradio-container.gradio-container .sc-wa .sc-wa-menu button, html.sc-embedded body .gradio-container.gradio-container .sc-wa .sc-menu button { font-size: .8rem !important; }
+/* 16 px como mínimo: con menos, el iPhone amplía la página al tocar la caja y no vuelve a su tamaño */
+html body .gradio-container.gradio-container .sc-wa textarea, html body .gradio-container.gradio-container .sc-wa input { font-size: 16px !important; }
+html.sc-embedded body .gradio-container.gradio-container .sc-wa .sc-sched { font-size: .88rem; }
+html body .gradio-container.gradio-container .sc-wa .sc-x .sc-ico { width: 16px !important; height: 16px !important; }
+
+/* «Elegir otra especialidad» bajo la lista de horarios: acción secundaria (volver atrás), sin borde, con flecha */
+html body .gradio-container .sc-wa .sc-choice button.sc-back { background: transparent !important; border: 0 !important; box-shadow: none !important;
+  color: var(--wa-chip-text) !important; justify-content: flex-start; padding-left: 12px !important; font-weight: 600; }
+html body .gradio-container .sc-wa .sc-choice button.sc-back::before { content: "←"; margin-right: 6px; }

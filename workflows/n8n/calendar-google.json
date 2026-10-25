@@ -1,0 +1,508 @@
+{
+  "id": "scCalendar01",
+  "name": "SaludCita · Google Calendar (BORRADOR — requiere credenciales, sin probar)",
+  "active": false,
+  "nodes": [
+    {
+      "id": "cal-trigger",
+      "name": "Cada minuto",
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.2,
+      "position": [
+        0,
+        200
+      ],
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "field": "minutes",
+              "minutesInterval": 1
+            }
+          ]
+        }
+      }
+    },
+    {
+      "id": "cal-claim",
+      "name": "Reclamar trabajos de calendario",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.5,
+      "position": [
+        220,
+        200
+      ],
+      "parameters": {
+        "method": "POST",
+        "url": "http://api:8080/api/v1/internal/jobs/claim",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify({ kinds: ['calendar.sync'], limit: 5 }) }}",
+        "options": {
+          "timeout": 20000
+        }
+      },
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "scApiServiceCred01",
+          "name": "SaludCita API (servicio n8n)"
+        }
+      }
+    },
+    {
+      "id": "cal-split",
+      "name": "Un trabajo por elemento",
+      "type": "n8n-nodes-base.splitOut",
+      "typeVersion": 1,
+      "position": [
+        440,
+        200
+      ],
+      "parameters": {
+        "fieldToSplitOut": "items",
+        "options": {}
+      }
+    },
+    {
+      "id": "cal-is-delete",
+      "name": "¿Cita cancelada?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        660,
+        200
+      ],
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "loose",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "f0b080a4-953e-5b91-8492-15b203920fd2",
+              "leftValue": "={{ $json.calendar.action }}",
+              "rightValue": "delete",
+              "operator": {
+                "type": "string",
+                "operation": "equals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      }
+    },
+    {
+      "id": "cal-delete",
+      "name": "Borrar evento",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.5,
+      "position": [
+        900,
+        80
+      ],
+      "parameters": {
+        "method": "DELETE",
+        "url": "={{ 'https://www.googleapis.com/calendar/v3/calendars/' + encodeURIComponent($('Un trabajo por elemento').item.json.calendar.calendar_id) + '/events/' + $('Un trabajo por elemento').item.json.calendar.event_id }}",
+        "authentication": "predefinedCredentialType",
+        "nodeCredentialType": "googleCalendarOAuth2Api",
+        "options": {
+          "timeout": 20000,
+          "response": {
+            "response": {
+              "neverError": true,
+              "fullResponse": true
+            }
+          }
+        }
+      },
+      "credentials": {
+        "googleCalendarOAuth2Api": {
+          "id": "scGoogleCalendar01",
+          "name": "Google Calendar (cuenta de prueba) — CONFIGURAR"
+        }
+      }
+    },
+    {
+      "id": "cal-del-ok",
+      "name": "¿Borrado (o ya no existía)?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        1120,
+        80
+      ],
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "loose",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "a6ebd1e2-8df3-50a7-95f2-6feeb37c0300",
+              "leftValue": "={{ [200, 204, 404, 410].includes($json.statusCode) }}",
+              "rightValue": "",
+              "operator": {
+                "type": "boolean",
+                "operation": "true"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      }
+    },
+    {
+      "id": "cal-update",
+      "name": "Actualizar evento (PUT)",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.5,
+      "position": [
+        900,
+        320
+      ],
+      "parameters": {
+        "method": "PUT",
+        "url": "={{ 'https://www.googleapis.com/calendar/v3/calendars/' + encodeURIComponent($('Un trabajo por elemento').item.json.calendar.calendar_id) + '/events/' + $('Un trabajo por elemento').item.json.calendar.event_id }}",
+        "authentication": "predefinedCredentialType",
+        "nodeCredentialType": "googleCalendarOAuth2Api",
+        "options": {
+          "timeout": 20000,
+          "response": {
+            "response": {
+              "neverError": true,
+              "fullResponse": true
+            }
+          }
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify($('Un trabajo por elemento').item.json.calendar.event) }}"
+      },
+      "credentials": {
+        "googleCalendarOAuth2Api": {
+          "id": "scGoogleCalendar01",
+          "name": "Google Calendar (cuenta de prueba) — CONFIGURAR"
+        }
+      }
+    },
+    {
+      "id": "cal-upd-404",
+      "name": "¿No existe aún?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        1120,
+        320
+      ],
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "loose",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "7197051a-10b4-552b-8f53-9b44cae13f8a",
+              "leftValue": "={{ $json.statusCode }}",
+              "rightValue": 404,
+              "operator": {
+                "type": "number",
+                "operation": "equals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      }
+    },
+    {
+      "id": "cal-insert",
+      "name": "Crear evento con ID determinista",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.5,
+      "position": [
+        1340,
+        400
+      ],
+      "parameters": {
+        "method": "POST",
+        "url": "={{ 'https://www.googleapis.com/calendar/v3/calendars/' + encodeURIComponent($('Un trabajo por elemento').item.json.calendar.calendar_id) + '/events' }}",
+        "authentication": "predefinedCredentialType",
+        "nodeCredentialType": "googleCalendarOAuth2Api",
+        "options": {
+          "timeout": 20000,
+          "response": {
+            "response": {
+              "neverError": true,
+              "fullResponse": true
+            }
+          }
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify(Object.assign({ id: $('Un trabajo por elemento').item.json.calendar.event_id }, $('Un trabajo por elemento').item.json.calendar.event)) }}"
+      },
+      "credentials": {
+        "googleCalendarOAuth2Api": {
+          "id": "scGoogleCalendar01",
+          "name": "Google Calendar (cuenta de prueba) — CONFIGURAR"
+        }
+      }
+    },
+    {
+      "id": "cal-ok",
+      "name": "¿Respuesta 2xx?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        1560,
+        320
+      ],
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "loose",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "ff251969-8aa2-5eb0-a2a7-d9fb2f590607",
+              "leftValue": "={{ $json.statusCode >= 200 && $json.statusCode < 300 }}",
+              "rightValue": "",
+              "operator": {
+                "type": "boolean",
+                "operation": "true"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      }
+    },
+    {
+      "id": "cal-ack",
+      "name": "Confirmar a la API",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.5,
+      "position": [
+        1780,
+        220
+      ],
+      "parameters": {
+        "method": "POST",
+        "url": "={{ 'http://api:8080/api/v1/internal/jobs/' + $('Un trabajo por elemento').item.json.job_id + '/ack' }}",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify({ lease_token: $('Un trabajo por elemento').item.json.lease_token, result: { version: $('Un trabajo por elemento').item.json.calendar.version, external_event_id: $('Un trabajo por elemento').item.json.calendar.event_id, action: $('Un trabajo por elemento').item.json.calendar.action } }) }}",
+        "options": {
+          "timeout": 20000
+        }
+      },
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "scApiServiceCred01",
+          "name": "SaludCita API (servicio n8n)"
+        }
+      }
+    },
+    {
+      "id": "cal-fail",
+      "name": "Informar fallo a la API",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.5,
+      "position": [
+        1780,
+        420
+      ],
+      "parameters": {
+        "method": "POST",
+        "url": "={{ 'http://api:8080/api/v1/internal/jobs/' + $('Un trabajo por elemento').item.json.job_id + '/fail' }}",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify({ lease_token: $('Un trabajo por elemento').item.json.lease_token, error: 'Google Calendar HTTP ' + $json.statusCode + ': ' + String(JSON.stringify($json.body ?? '')).slice(0, 900) }) }}",
+        "options": {
+          "timeout": 20000
+        }
+      },
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "scApiServiceCred01",
+          "name": "SaludCita API (servicio n8n)"
+        }
+      }
+    }
+  ],
+  "connections": {
+    "Cada minuto": {
+      "main": [
+        [
+          {
+            "node": "Reclamar trabajos de calendario",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Reclamar trabajos de calendario": {
+      "main": [
+        [
+          {
+            "node": "Un trabajo por elemento",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Un trabajo por elemento": {
+      "main": [
+        [
+          {
+            "node": "¿Cita cancelada?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "¿Cita cancelada?": {
+      "main": [
+        [
+          {
+            "node": "Borrar evento",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Actualizar evento (PUT)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Borrar evento": {
+      "main": [
+        [
+          {
+            "node": "¿Borrado (o ya no existía)?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "¿Borrado (o ya no existía)?": {
+      "main": [
+        [
+          {
+            "node": "Confirmar a la API",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Informar fallo a la API",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Actualizar evento (PUT)": {
+      "main": [
+        [
+          {
+            "node": "¿No existe aún?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "¿No existe aún?": {
+      "main": [
+        [
+          {
+            "node": "Crear evento con ID determinista",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "¿Respuesta 2xx?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Crear evento con ID determinista": {
+      "main": [
+        [
+          {
+            "node": "¿Respuesta 2xx?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "¿Respuesta 2xx?": {
+      "main": [
+        [
+          {
+            "node": "Confirmar a la API",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Informar fallo a la API",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1",
+    "timezone": "America/Santo_Domingo",
+    "saveDataSuccessExecution": "all",
+    "saveDataErrorExecution": "all"
+  },
+  "pinData": {},
+  "tags": [],
+  "meta": {
+    "saludcita": "Espejo unidireccional API → Google Calendar. NO publicado: falta la credencial OAuth «Google Calendar (cuenta de prueba)» y la integración no se ha probado contra Google. Ver docs/automatizaciones.md.",
+    "saludcita_publish": false
+  }
+}

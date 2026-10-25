@@ -1,0 +1,377 @@
+{
+  "request": {
+    "method": "GET",
+    "path": "/api/v1/stats/occupancy?from=2026-10-16&to=2026-11-16"
+  },
+  "status": 200,
+  "body": {
+    "filters": {
+      "from": "2026-10-16",
+      "to": "2026-11-16",
+      "center_id": null,
+      "doctor_id": null,
+      "specialty_id": null
+    },
+    "timezone": "America/Santo_Domingo",
+    "generated_at": "2026-10-23T19:14:58-04:00",
+    "definitions": {
+      "periodo": "Intervalo [from, to) de fechas locales en la zona de negocio; to se excluye.",
+      "occupancy": "occupied/enabled: slots abiertos del periodo con cita booked/completed/no_show sobre slots abiertos del periodo. Los slots retenidos por una oferta (held_by_offer) y los bloqueados se informan aparte y no cuentan como ocupados.",
+      "filters": "center_id, doctor_id y specialty_id filtran por el servicio del slot asociado. Las búsquedas solo se atribuyen a un filtro si se hicieron por servicio o por esa especialidad."
+    },
+    "data": [
+      {
+        "weekday": 1,
+        "hour": 8,
+        "enabled": 15,
+        "occupied": 2,
+        "held_by_offer": 0,
+        "rate": 0.1333
+      },
+      {
+        "weekday": 1,
+        "hour": 9,
+        "enabled": 15,
+        "occupied": 0,
+        "held_by_offer": 0,
+        "rate": 0
+      },
+      {
+        "weekday": 1,
+        "hour": 10,
+        "enabled": 15,
+        "occupied": 0,
+        "held_by_offer": 0,
+        "rate": 0
+      },
+      {
+        "weekday": 1,
+        "hour": 11,
+        "enabled": 15,
+        "occupied": 0,
+        "held_by_offer": 0,
+        "rate": 0
+      },
+      {
+        "weekday": 1,
+        "hour": 13,
+        "enabled": 15,
+        "occupied": 0,
+        "held_by_offer": 0,
+        "rate": 0
+      },
+      {
+        "weekday": 1,
+        "hour": 14,
+        "enabled": 15,
+        "occupied": 0,
+        "held_by_offer": 0,
+        "rate": 0
+      },
+      {
+        "weekday": 1,
+        "hour": 15,
+        "enabled": 15,
+        "occupied": 0,
+        "held_by_offer": 0,
+        "rate": 0
+      },
+      {
+        "weekday": 1,
+        "hour": 16,
+        "enabled": 15,
+        "occupied": 0,
+        "held_by_offer": 0,
+        "rate": 0
+      },
+      {
+        "weekday": 2,
+        "hour": 8,
+        "enabled": 24,
+        "occupied": 0,
+        "held_by_offer": 0,
+        "rate": 0
+      },
+      {
+        "weekday": 2,
+        "hour": 9,
+        "enabled": 24,
+        "occupied": 0,
+        "held_by_offer": 0,
+        "rate": 0
+      },
+      {
+        "weekday": 2,
+        "hour": 10,
+        "enabled": 24,
+        "occupied": 0,
+        "held_by_offer": 0,
+        "rate": 0
+      },
+      {
+        "weekday": 2,
+        "hour": 11,
+        "enabled": 24,
+        "occupied": 0,
+        "held_by_offer": 0,
+        "rate": 0
+      },
+      {
+        "weekday": 2,
+        "hour": 13,
+        "enabled": 24,
+        "occupied": 0,
+        "held_by_offer": 0,
+        "rate": 0
+      },
+      {
+        "weekday": 2,
+        "hour": 14,
+        "enabled": 24,
+        "occupied": 0,
+        "held_by_offer": 0,
+        "rate": 0
+      },
+      {
+        "weekday": 2,
+        "hour": 15,
+        "enabled": 24,
+        "occupied": 0,
+        "held_by_offer": 0,
+        "rate": 0
+      },
+      {
+        "weekday": 2,
+        "hour": 16,
+        "enabled": 18,
+        "occupied": 0,
+        "held_by_offer": 0,
+        "rate": 0
+      },
+      {
+        "weekday": 3,
+        "hour": 8,
+        "enabled": 15,
+        "occupied": 0,
+        "held_by_offer": 0,
+        "rate": 0
+      },
+      {
+        "weekday": 3,
+        "hour": 9,
+        "enabled": 15,
+        "occupied": 0,
+        "held_by_offer": 0,
+        "rate": 0
+      },
+      {
+        "weekday": 3,
+        "hour": 10,
+        "enabled": 15,
+        "occupied": 0,
+        "held_by_offer": 0,
+        "rate": 0
+      },
+      {
+        "weekday": 3,
+        "hour": 11,
+        "enabled": 15,
+        "occupied": 0,
+        "held_by_offer": 0,
+        "rate": 0
+      },
+      {
+        "weekday": 3,
+        "hour": 13,
+        "enabled": 18,
+        "occupied": 0,
+        "held_by_offer": 0,
+        "rate": 0
+      },
+      {
+        "weekday": 3,
+        "hour": 14,
+        "enabled": 18,
+        "occupied": 0,
+        "held_by_offer": 0,
+        "rate": 0
+      },
+      {
+        "weekday": 3,
+        "hour": 15,
+        "enabled": 18,
+        "occupied": 0,
+        "held_by_offer": 0,
+        "rate": 0
+      },
+      {
+        "weekday": 3,
+        "hour": 16,
+        "enabled": 18,
+        "occupied": 0,
+        "held_by_offer": 0,
+        "rate": 0
+      },
+      {
+        "weekday": 4,
+        "hour": 8,
+        "enabled": 24,
+        "occupied": 1,
+        "held_by_offer": 0,
+        "rate": 0.0417
+      },
+      {
+        "weekday": 4,
+        "hour": 9,
+        "enabled": 24,
+        "occupied": 0,
+        "held_by_offer": 0,
+        "rate": 0
+      },
+      {
+        "weekday": 4,
+        "hour": 10,
+        "enabled": 24,
+        "occupied": 0,
+        "held_by_offer": 0,
+        "rate": 0
+      },
+      {
+        "weekday": 4,
+        "hour": 11,
+        "enabled": 24,
+        "occupied": 0,
+        "held_by_offer": 0,
+        "rate": 0
+      },
+      {
+        "weekday": 4,
+        "hour": 13,
+        "enabled": 24,
+        "occupied": 0,
+        "held_by_offer": 0,
+        "rate": 0
+      },
+      {
+        "weekday": 4,
+        "hour": 14,
+        "enabled": 24,
+        "occupied": 0,
+        "held_by_offer": 0,
+        "rate": 0
+      },
+      {
+        "weekday": 4,
+        "hour": 15,
+        "enabled": 24,
+        "occupied": 0,
+        "held_by_offer": 0,
+        "rate": 0
+      },
+      {
+        "weekday": 4,
+        "hour": 16,
+        "enabled": 18,
+        "occupied": 0,
+        "held_by_offer": 0,
+        "rate": 0
+      },
+      {
+        "weekday": 5,
+        "hour": 8,
+        "enabled": 20,
+        "occupied": 0,
+        "held_by_offer": 0,
+        "rate": 0
+      },
+      {
+        "weekday": 5,
+        "hour": 9,
+        "enabled": 20,
+        "occupied": 0,
+        "held_by_offer": 0,
+        "rate": 0
+      },
+      {
+        "weekday": 5,
+        "hour": 10,
+        "enabled": 20,
+        "occupied": 0,
+        "held_by_offer": 0,
+        "rate": 0
+      },
+      {
+        "weekday": 5,
+        "hour": 11,
+        "enabled": 20,
+        "occupied": 0,
+        "held_by_offer": 0,
+        "rate": 0
+      },
+      {
+        "weekday": 5,
+        "hour": 13,
+        "enabled": 12,
+        "occupied": 0,
+        "held_by_offer": 0,
+        "rate": 0
+      },
+      {
+        "weekday": 5,
+        "hour": 14,
+        "enabled": 12,
+        "occupied": 0,
+        "held_by_offer": 0,
+        "rate": 0
+      },
+      {
+        "weekday": 5,
+        "hour": 15,
+        "enabled": 12,
+        "occupied": 0,
+        "held_by_offer": 0,
+        "rate": 0
+      },
+      {
+        "weekday": 5,
+        "hour": 16,
+        "enabled": 12,
+        "occupied": 0,
+        "held_by_offer": 0,
+        "rate": 0
+      },
+      {
+        "weekday": 6,
+        "hour": 8,
+        "enabled": 12,
+        "occupied": 1,
+        "held_by_offer": 0,
+        "rate": 0.0833
+      },
+      {
+        "weekday": 6,
+        "hour": 9,
+        "enabled": 12,
+        "occupied": 0,
+        "held_by_offer": 0,
+        "rate": 0
+      },
+      {
+        "weekday": 6,
+        "hour": 10,
+        "enabled": 12,
+        "occupied": 0,
+        "held_by_offer": 0,
+        "rate": 0
+      },
+      {
+        "weekday": 6,
+        "hour": 11,
+        "enabled": 12,
+        "occupied": 0,
+        "held_by_offer": 0,
+        "rate": 0
+      }
+    ]
+  }
+}

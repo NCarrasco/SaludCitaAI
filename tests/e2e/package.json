@@ -1,0 +1,15 @@
+{
+  "name": "@saludcita/e2e",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Pruebas de interfaz (Playwright) contra el sistema levantado con Docker Compose",
+  "type": "module",
+  "scripts": {
+    "install-browser": "playwright install chromium",
+    "test": "playwright test"
+  },
+  "devDependencies": {
+    "@axe-core/playwright": "4.14.0",
+    "@playwright/test": "1.64.1"
+  }
+}

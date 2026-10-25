@@ -1,0 +1,111 @@
+{
+  "request": {
+    "method": "GET",
+    "path": "/api/v1/stats/doctors?from=2026-10-16&to=2026-11-16"
+  },
+  "status": 200,
+  "body": {
+    "filters": {
+      "from": "2026-10-16",
+      "to": "2026-11-16",
+      "center_id": null,
+      "doctor_id": null,
+      "specialty_id": null
+    },
+    "timezone": "America/Santo_Domingo",
+    "generated_at": "2026-10-23T19:14:58-04:00",
+    "definitions": {
+      "periodo": "Intervalo [from, to) de fechas locales en la zona de negocio; to se excluye.",
+      "operations": "Eventos appointment_events confirmados (booked, cancelled, rescheduled, advanced) por fecha de la operación. No son mensajes ni ejecuciones de n8n.",
+      "occupancy": "occupied/enabled: slots abiertos del periodo con cita booked/completed/no_show sobre slots abiertos del periodo. Los slots retenidos por una oferta (held_by_offer) y los bloqueados se informan aparte y no cuentan como ocupados.",
+      "attendance": "Sobre citas ya iniciadas del periodo: completed y no_show los marca el personal; unmarked = siguen en booked. rate = completed/(completed+no_show). Una reserva no acredita asistencia.",
+      "filters": "center_id, doctor_id y specialty_id filtran por el servicio del slot asociado. Las búsquedas solo se atribuyen a un filtro si se hicieron por servicio o por esa especialidad."
+    },
+    "data": [
+      {
+        "id": "30000000-0000-4000-8000-000000000005",
+        "name": "Dra. Laura Jiménez (ficticia)",
+        "bookings": 4,
+        "cancellations": 4,
+        "reschedules": 4,
+        "advances": 0,
+        "slots_enabled": 192,
+        "slots_occupied": 0,
+        "occupancy_rate": 0,
+        "completed": 0,
+        "no_show": 0,
+        "attendance_rate": null
+      },
+      {
+        "id": "30000000-0000-4000-8000-000000000004",
+        "name": "Dr. José Taveras (ficticio)",
+        "bookings": 2,
+        "cancellations": 1,
+        "reschedules": 0,
+        "advances": 0,
+        "slots_enabled": 84,
+        "slots_occupied": 1,
+        "occupancy_rate": 0.0119,
+        "completed": 0,
+        "no_show": 0,
+        "attendance_rate": null
+      },
+      {
+        "id": "30000000-0000-4000-8000-000000000006",
+        "name": "Dr. Miguel Ortega (ficticio)",
+        "bookings": 1,
+        "cancellations": 0,
+        "reschedules": 0,
+        "advances": 0,
+        "slots_enabled": 120,
+        "slots_occupied": 1,
+        "occupancy_rate": 0.0083,
+        "completed": 0,
+        "no_show": 0,
+        "attendance_rate": null
+      },
+      {
+        "id": "30000000-0000-4000-8000-000000000001",
+        "name": "Dra. Ana Lucía Méndez (ficticia)",
+        "bookings": 1,
+        "cancellations": 0,
+        "reschedules": 0,
+        "advances": 0,
+        "slots_enabled": 192,
+        "slots_occupied": 1,
+        "occupancy_rate": 0.0052,
+        "completed": 0,
+        "no_show": 0,
+        "attendance_rate": null
+      },
+      {
+        "id": "30000000-0000-4000-8000-000000000003",
+        "name": "Dra. María Sosa (ficticia)",
+        "bookings": 1,
+        "cancellations": 0,
+        "reschedules": 0,
+        "advances": 0,
+        "slots_enabled": 80,
+        "slots_occupied": 1,
+        "occupancy_rate": 0.0125,
+        "completed": 0,
+        "no_show": 0,
+        "attendance_rate": null
+      },
+      {
+        "id": "30000000-0000-4000-8000-000000000002",
+        "name": "Dr. Carlos Peña (ficticio)",
+        "bookings": 0,
+        "cancellations": 0,
+        "reschedules": 0,
+        "advances": 0,
+        "slots_enabled": 132,
+        "slots_occupied": 0,
+        "occupancy_rate": 0,
+        "completed": 0,
+        "no_show": 0,
+        "attendance_rate": null
+      }
+    ]
+  }
+}
